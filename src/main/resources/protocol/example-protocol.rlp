@@ -1,16 +1,41 @@
-ProtocolName example protocol V01
-ProtocolDescription this is an example protocol.\
-  In this way you can\
-  spread your line into multiple lines.\
-    And it can be \
-   of any number of spaces!
+# RedstoneLamp Protocol Documentation File
+
 # In this way you can make comments with the # sign
-  # Just indent this file in any sizes and we still accept it!
-# Note that you may not use # as the comment sign at the middle of a line!
+        # Just indent this file in any sizes and we still accept it!
+    # Note that you may not use # as the comment sign at the middle of a line!
 
-DeclarePacket x01
-  PacketName LoginPacket
-  PacketField STRING username
-  PacketField SKIP 4
-EndPacket
+ProtocolName Minecraft NokiaEdition V01
+# ProtocolName <protocol name ...>
 
+ProtocolDescription this is an example protocol.\
+    In this way you can\
+    spread your line into multiple lines.\
+        And it can be \
+     of any number of spaces!
+# ProtocolDescription <description ...>
+# ProtocolDescription is optional and default to "(no description)"
+
+DefaultRequestPackage net.redstonelamp.request
+# DefaultRequestPackage <package name>
+DefaultResponsePackage net.redstonelamp.response
+# DefaultResponsePackage <package name>
+
+# DefaultRequestPackage and DefaultResponsePackage are optional and default to the values above.
+
+DeclarePacket 01
+# DeclarePacket <hex packet ID>
+    PacketName ChatPacket
+    # PacketName <packet name>
+    PacketField STRING message
+    # PacketField <BYTE | SHORT | TRIAD|BE_TRIAD|BIG_ENDIAN_TRIAD | LTRIAD|L_TRIAD|LE_TRIAD|LITTLE_ENDIAN_TRIAD | INT|INTEGER | LONG | VAR_INT|VARINT | STRING | VAR_STRING|VARSTRING | FLOAT | DOUBLE | UUID | BOOLEAN | ADDRESS | METADATA> [-unsigned] <field name at the request/response class> [<description ...>]
+    PacketField BYTE position
+    PacketField SHORT -unsigned wordsCount
+    PacketField SKIP 4
+    AssocRequest ChatRequest
+    # AssocRequest <associated Request class name, may be relative to DefaultRequestPackage>
+    AssocResponse ChatResponse
+    # AssocResponse <name of the Response class to associate to, may be relative to DefaultResponsePackage>
+CommitPacket
+# CommitPacket
+
+# You must commit a packet before declaring another one
