@@ -99,8 +99,9 @@ public class Player extends PlayerEntity{
             data.setInventory(inv);
             server.getPlayerDatabase().updateData(data);
         }
-        if(!data.getUuid().toString().equals(uuid.toString()))
+        if(!data.getUuid().toString().equals(uuid.toString())){
             server.getLogger().warning("[Loading data] UUID does not match: " + data.getUuid() + ", " + uuid);
+        }
         setPosition(data.getPosition());
         setHealth(data.getHealth());
         gamemode = data.getGamemode();
@@ -262,7 +263,6 @@ public class Player extends PlayerEntity{
         if(!leaveMessage.isEmpty()){
             server.broadcastMessage(username + leaveMessage);
         }
-
     }
 
     public Protocol getProtocol(){

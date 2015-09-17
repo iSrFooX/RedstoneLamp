@@ -97,7 +97,9 @@ public abstract class PluginLoader{
      */
     public boolean dependsOn(String depend){
         for(String dependency : getDependencies()){
-            if(dependency.equalsIgnoreCase(depend)) return true;
+            if(dependency.equalsIgnoreCase(depend)){
+                return true;
+            }
         }
         return false;
     }
@@ -109,7 +111,9 @@ public abstract class PluginLoader{
      */
     public boolean softDependsOn(String depend){
         for(String dependency : getSoftDependencies()){
-            if(dependency.equalsIgnoreCase(depend)) return true;
+            if(dependency.equalsIgnoreCase(depend)){
+                return true;
+            }
         }
         return false;
     }

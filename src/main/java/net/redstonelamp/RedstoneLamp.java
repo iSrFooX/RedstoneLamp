@@ -120,5 +120,4 @@ public class RedstoneLamp{
     public static String getSoftwareVersionString(){
         return SOFTWARE + " " + SOFTWARE_VERSION + "-" + SOFTWARE_STATE;
     }
-
 }

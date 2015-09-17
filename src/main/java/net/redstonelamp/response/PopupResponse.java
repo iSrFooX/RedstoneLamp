@@ -23,5 +23,4 @@ public class PopupResponse extends Response{
     public PopupResponse(String message){
         this.message = message;
     }
-
 }

@@ -26,9 +26,11 @@ import java.util.List;
 public class RLPParser implements Closeable{
     private BufferedReader reader;
     private String sourcePath;
-    private String name, description;
-    private Packet currentDeclaringPacket = null;
+    private String name, description = "(no description)";
+
+    private Packet currentlyDeclaringPacket = null;
     private int currentLine = 0;
+
     public RLPParser(File file) throws IOException{
         this(new FileInputStream(file), file.getCanonicalPath());
     }
@@ -39,6 +41,7 @@ public class RLPParser implements Closeable{
         this.sourcePath = sourcePath;
         reader = new BufferedReader(in);
     }
+
     public void parse() throws IOException, RLPFormatException{
         String line;
         String prefix = "";
@@ -54,9 +57,23 @@ public class RLPParser implements Closeable{
             line = prefix + line;
             prefix = "";
             List<String> args = Arrays.asList(line.split(" "));
-            handleCommand(args);
+            try{
+                handleCommand(args);
+            }catch(RuntimeException e){
+                throw error(e);
+            }
         }
     }
+
+    public int getCurrentLine(){
+        return currentLine;
+    }
+
+    @Override
+    public void close() throws IOException{
+        reader.close();
+    }
+
     private void handleCommand(List<String> args) throws RLPFormatException{
         String cmd = args.remove(0);
         if(cmd.equalsIgnoreCase("ProtocolName")){
@@ -64,19 +81,33 @@ public class RLPParser implements Closeable{
         }else if(cmd.equalsIgnoreCase("ProtocolDescription")){
             description = implode(" ", args);
         }else if(cmd.equalsIgnoreCase("DeclarePacket")){
-            currentDeclaringPacket = new Packet();
-            currentDeclaringPacket.pid = Byte.decode(args.get(0));
+            if(currentlyDeclaringPacket != null){
+                throw error("Attempt to declare packet while older packet not commited");
+            }
+            currentlyDeclaringPacket = new Packet();
+            currentlyDeclaringPacket.pid = Byte.parseByte(args.get(0), 16);
         }else if(cmd.equalsIgnoreCase("PacketName")){
-            if(currentDeclaringPacket == null){
+            if(currentlyDeclaringPacket == null){
                 throw error("Attempt to declare packet name while not declaring a packet");
             }
-            currentDeclaringPacket.name = args.get(0);
+            currentlyDeclaringPacket.name = args.get(0);
+        }else if(cmd.equalsIgnoreCase("PacketField")){
+            if(currentlyDeclaringPacket == null){
+                throw error("Attempt to declare packet name while not declaring a packet");
+            }
+            Field field = new Field();
+            boolean isUnsigned = args.get(1) == "-unsigned";
+            if(isUnsigned){
+                args.remove(1);
+            }
+            field.type = PacketFieldType.fromString(args.get(0), isUnsigned);
+            if(field.type == null){
+                throw error("Unknown type " + args.get(0));
+            }
+            field.name = args.get(1);
+            currentlyDeclaringPacket.fields.add(field);
         }
         // TODO not finished
-    }
-    @Override
-    public void close() throws IOException{
-        reader.close();
     }
     private String implode(String glue, List<String> list){
         StringBuilder builder = new StringBuilder();
@@ -89,12 +120,14 @@ public class RLPParser implements Closeable{
         currentLine++;
         return reader.readLine();
     }
+
     private RLPFormatException error(String msg){
         return new RLPFormatException(msg + " on line " + currentLine + " at " + sourcePath);
     }
-    public int getCurrentLine(){
-        return currentLine;
+    private RLPFormatException error(Throwable t){
+        return new RLPFormatException("Exception thrown on line " + currentLine, t);
     }
+
     private class Packet{
         public byte pid;
         public String name;
@@ -104,22 +137,6 @@ public class RLPParser implements Closeable{
 
     private class Field{
         public String name;
-        public FieldType type;
-    }
-
-    private enum FieldType{
-        BYTE,
-        SHORT,
-        TRIAD,
-        L_TRIAD,
-        ADDRESS,
-        INT,
-        LONG,
-        STRING,
-        METADATA;
-        public Object read(){
-            // TODO more work
-            return null;
-        }
+        public PacketFieldType type;
     }
 }

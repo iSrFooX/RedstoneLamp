@@ -26,5 +26,4 @@ public abstract class JavaPlugin extends Plugin{
                       String website){
         super(server, logger, name, version, authors, website);
     }
-
 }

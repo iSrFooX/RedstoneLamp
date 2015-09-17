@@ -71,16 +71,19 @@ public class SimpleMobAI implements AI{
 
     @Override
     public boolean playerInRange(){
-        if(playerAt(mob.getPosition().getX(), mob.getPosition().getY(), mob.getPosition().getZ()))
+        if(playerAt(mob.getPosition().getX(), mob.getPosition().getY(), mob.getPosition().getZ())){
             return true;
+        }
         for(double x = 0; x < range + 1; x++){
             x = position.getX() + x;
-            if(playerAt(x, mob.getPosition().getY(), mob.getPosition().getZ()))
+            if(playerAt(x, mob.getPosition().getY(), mob.getPosition().getZ())){
                 return true;
+            }
             for(double z = 0; z < range + 1; z++){
                 z = position.getX() + z;
-                if(playerAt(x, mob.getPosition().getY(), z))
+                if(playerAt(x, mob.getPosition().getY(), z)){
                     return true;
+                }
             }
         }
         return false;
@@ -88,25 +91,30 @@ public class SimpleMobAI implements AI{
 
     @Override
     public boolean canAttack(){
-        if(playerAt(mob.getPosition().getX(), mob.getPosition().getY(), mob.getPosition().getZ()))
+        if(playerAt(mob.getPosition().getX(), mob.getPosition().getY(), mob.getPosition().getZ())){
             return true;
-        else if(playerAt(mob.getPosition().getX(), mob.getPosition().getY(), mob.getPosition().getZ() + 1))
+        }else if(playerAt(mob.getPosition().getX(), mob.getPosition().getY(), mob.getPosition().getZ() + 1)){
             return true;
-        else if(playerAt(mob.getPosition().getX() + 1, mob.getPosition().getY(), mob.getPosition().getZ()))
+        }else if(playerAt(mob.getPosition().getX() + 1, mob.getPosition().getY(), mob.getPosition().getZ())){
             return true;
-        else if(playerAt(mob.getPosition().getX() + 1, mob.getPosition().getY(), mob.getPosition().getZ() + 1))
+        }else if(playerAt(mob.getPosition().getX() + 1, mob.getPosition().getY(), mob.getPosition().getZ() + 1)){
             return true;
+        }
         return false;
     }
 
     @Override
     public boolean playerAt(double x, double y, double z){
         for(Player p : RedstoneLamp.SERVER.getPlayers()){
-            if(p.getPosition().getX() == x)
-                if(p.getPosition().getY() == y)
-                    if(p.getPosition().getZ() == z)
-                        if(p.getPosition().getLevel() == mob.getPosition().getLevel())
+            if(p.getPosition().getX() == x){
+                if(p.getPosition().getY() == y){
+                    if(p.getPosition().getZ() == z){
+                        if(p.getPosition().getLevel() == mob.getPosition().getLevel()){
                             return true;
+                        }
+                    }
+                }
+            }
         }
         return false;
     }

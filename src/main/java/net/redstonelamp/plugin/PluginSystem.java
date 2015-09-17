@@ -50,7 +50,9 @@ public class PluginSystem{
      */
     public void loadPlugins(){
         logger.info("Loading & initializing plugins...");
-        for(PluginManager mgr : pluginManagers) mgr.loadPlugins();
+        for(PluginManager mgr : pluginManagers){
+            mgr.loadPlugins();
+        }
         for(PluginManager mgr : pluginManagers){
             mgr.getPluginLoaders().forEach(this::initPlugin);
         }
@@ -80,7 +82,9 @@ public class PluginSystem{
      */
     private void initPlugin(PluginLoader loader){
         //If this plugin already got initialized, return
-        if(loader.getState() == PluginState.INITIALIZED) return;
+        if(loader.getState() == PluginState.INITIALIZED){
+            return;
+        }
         //Check if all dependencies are loaded and load them if not
         //If a dependency is missing, return to stop loading this plugin
         for(String depend : loader.getDependencies()){
@@ -115,7 +119,9 @@ public class PluginSystem{
      */
     private void enablePlugin(PluginLoader loader){
         //If this plugin didn't get initialized, return
-        if(loader.getState() != PluginState.INITIALIZED && loader.getState() != PluginState.DISABLED) return;
+        if(loader.getState() != PluginState.INITIALIZED && loader.getState() != PluginState.DISABLED){
+            return;
+        }
         //Check if all dependencies are enabled and enable them if not
         //If a dependency is missing, return to stop loading this plugin (should never happen)
         for(String depend : loader.getDependencies()){
@@ -170,7 +176,9 @@ public class PluginSystem{
      */
     private void disablePlugin(PluginLoader loader){
         //If this plugin didn't get enabled, return
-        if(loader.getState() != PluginState.ENABLED) return;
+        if(loader.getState() != PluginState.ENABLED){
+            return;
+        }
         //Disable plugins depending on this plugin first
         for(PluginManager mgr : pluginManagers){
             mgr.getPluginLoaders().stream()
@@ -188,7 +196,9 @@ public class PluginSystem{
      */
     public PluginManager getPluginManager(String name){
         PluginLoader l = getPluginLoader(name);
-        if(l == null) return null;
+        if(l == null){
+            return null;
+        }
         return l.getPluginManager();
     }
     /**

@@ -173,7 +173,6 @@ public class LevelDBProvider implements LevelProvider{
         }
         */
 
-
         int x = (int) getTag("SpawnX").getValue();
         int y = (int) getTag("SpawnY").getValue();
         int z = (int) getTag("SpawnZ").getValue();

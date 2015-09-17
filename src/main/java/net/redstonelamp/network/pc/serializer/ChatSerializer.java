@@ -51,5 +51,4 @@ public class ChatSerializer{
     public String toString(){
         return chat.toJSONString();
     }
-
 }

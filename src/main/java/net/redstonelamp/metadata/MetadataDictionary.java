@@ -16,7 +16,6 @@
  */
 package net.redstonelamp.metadata;
 
-
 import net.redstonelamp.nio.BinaryBuffer;
 
 import java.nio.ByteOrder;

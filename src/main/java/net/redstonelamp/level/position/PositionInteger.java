@@ -52,7 +52,6 @@ public class PositionInteger{
         this.z = z;
     }
 
-
     public int getX(){
         return x;
     }

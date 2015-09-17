@@ -16,7 +16,6 @@
  */
 package net.redstonelamp.nio;
 
-
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -181,9 +180,13 @@ public class BinaryBuffer{
 
             i |= (k & 0x7F) << j++ * 7;
 
-            if(j > 5) throw new RuntimeException("VarInt too big");
+            if(j > 5){
+                throw new RuntimeException("VarInt too big");
+            }
 
-            if((k & 0x80) != 128) break;
+            if((k & 0x80) != 128){
+                break;
+            }
         }
         return i;
     }

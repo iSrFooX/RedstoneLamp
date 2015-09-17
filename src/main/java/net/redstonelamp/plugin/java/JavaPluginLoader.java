@@ -58,13 +58,25 @@ public class JavaPluginLoader extends PluginLoader{
             JavaClassPath.addFile(getPluginFile());
             YamlReader reader = new YamlReader(new InputStreamReader(getResourceAsStream("plugin.yml")));
             JavaPluginProperties prop = reader.read(JavaPluginProperties.class);
-            if(prop.getMain() == null) throw new YamlException("plugin.yml does not contain main class");
-            if(prop.getName() == null) throw new YamlException("plugin.yml does not contain plugin name");
-            if(prop.getVersion() == null) throw new YamlException("plugin.yml does not contain plugin version");
-            if(prop.getSoftdepend() != null)
-                for(String sd : prop.getSoftdepend()) getSoftDependencies().add(sd);
-            if(prop.getDepend() != null)
-                for(String d : prop.getDepend()) getDependencies().add(d);
+            if(prop.getMain() == null){
+                throw new YamlException("plugin.yml does not contain main class");
+            }
+            if(prop.getName() == null){
+                throw new YamlException("plugin.yml does not contain plugin name");
+            }
+            if(prop.getVersion() == null){
+                throw new YamlException("plugin.yml does not contain plugin version");
+            }
+            if(prop.getSoftdepend() != null){
+                for(String sd : prop.getSoftdepend()){
+                    getSoftDependencies().add(sd);
+                }
+            }
+            if(prop.getDepend() != null){
+                for(String d : prop.getDepend()){
+                    getDependencies().add(d);
+                }
+            }
             name = prop.getName();
             version = prop.getVersion();
             properties = prop;
@@ -77,7 +89,9 @@ public class JavaPluginLoader extends PluginLoader{
 
     @Override
     public void initPlugin(){
-        if(getState() != PluginState.LOADED) return;
+        if(getState() != PluginState.LOADED){
+            return;
+        }
         Class<?> mainClass;
         try{
             mainClass = Class.forName(getProperties().getMain());
@@ -110,7 +124,9 @@ public class JavaPluginLoader extends PluginLoader{
 
     @Override
     public void enablePlugin(){
-        if(getState() != PluginState.INITIALIZED) return;
+        if(getState() != PluginState.INITIALIZED){
+            return;
+        }
         PluginSystem.getLogger().info("Enabling " + name + " v." + version + "...");
         plugin.onEnable();
         setState(PluginState.ENABLED);
@@ -118,7 +134,9 @@ public class JavaPluginLoader extends PluginLoader{
 
     @Override
     public void disablePlugin(){
-        if(getState() != PluginState.ENABLED) return;
+        if(getState() != PluginState.ENABLED){
+            return;
+        }
         PluginSystem.getLogger().info("Disabling " + name + " v." + version + "...");
         plugin.onDisable();
         setState(PluginState.DISABLED);
@@ -129,5 +147,4 @@ public class JavaPluginLoader extends PluginLoader{
         JarFile jar = new JarFile(getPluginFile());
         return jar.getInputStream(jar.getJarEntry(path));
     }
-
 }

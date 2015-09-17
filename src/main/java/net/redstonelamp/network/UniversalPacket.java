@@ -16,7 +16,6 @@
  */
 package net.redstonelamp.network;
 
-
 import net.redstonelamp.nio.BinaryBuffer;
 
 import java.net.SocketAddress;

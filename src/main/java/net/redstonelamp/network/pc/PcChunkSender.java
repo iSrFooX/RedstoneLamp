@@ -56,12 +56,16 @@ public class PcChunkSender{
             }
         }
         for(Player player : requestChunks.keySet()){
-            if(sent >= REQUESTS_PER_TICK) break;
+            if(sent >= REQUESTS_PER_TICK){
+                break;
+            }
 
             int pSent = 0;
             List<ChunkPosition> chunks = requestChunks.get(player);
             for(ChunkPosition location : chunks){
-                if(pSent >= pLimit) break;
+                if(pSent >= pLimit){
+                    break;
+                }
 
                 ChunkRequest r = new ChunkRequest(location);
                 player.handleRequest(r);

@@ -46,6 +46,5 @@ public class JavaClassPath{
             t.printStackTrace();
             throw new IOException("Error, could not add URL to system classloader");
         }
-
     }
 }

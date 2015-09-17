@@ -171,8 +171,9 @@ public class Vector3{
 
     public Vector3 normalize(){
         int len = lengthSquared();
-        if(len > 0)
+        if(len > 0){
             return divide((int) Math.sqrt(len));
+        }
         return new Vector3(0, 0, 0);
     }
 
@@ -196,39 +197,45 @@ public class Vector3{
         int xDiff = v.x - this.x;
         int yDiff = v.y - y;
         int zDiff = v.z - z;
-        if(xDiff * xDiff < 0.0000001)
+        if(xDiff * xDiff < 0.0000001){
             return null;
+        }
         int f = (x - this.x) / xDiff;
-        if(f < 0 || f > 1)
+        if(f < 0 || f > 1){
             return null;
-        else
+        }else{
             return new Vector3(this.x + xDiff * f, y + yDiff * f, z + zDiff * f);
+        }
     }
 
     public Vector3 getIntermediateWithYValue(Vector3 v, int y){
         int xDiff = v.x - x;
         int yDiff = v.y - this.y;
         int zDiff = v.z - z;
-        if(yDiff * yDiff < 0.0000001)
+        if(yDiff * yDiff < 0.0000001){
             return null;
+        }
         int f = (y - this.y) / yDiff;
-        if(f < 0 || f > 1)
+        if(f < 0 || f > 1){
             return null;
-        else
+        }else{
             return new Vector3(x + xDiff * f, this.y + yDiff * f, z + zDiff * f);
+        }
     }
 
     public Vector3 getIntermediateWithZValue(Vector3 v, int z){
         int xDiff = v.x - x;
         int yDiff = v.y - y;
         int zDiff = v.z - this.z;
-        if(zDiff * zDiff < 0.0000001)
+        if(zDiff * zDiff < 0.0000001){
             return null;
+        }
         int f = (z - this.z) / zDiff;
-        if(f < 0 || f > 1)
+        if(f < 0 || f > 1){
             return null;
-        else
+        }else{
             return new Vector3(x + xDiff * f, y + yDiff * f, this.z + zDiff * f);
+        }
     }
 
     public Vector3 setComponents(int x, int y, int z){

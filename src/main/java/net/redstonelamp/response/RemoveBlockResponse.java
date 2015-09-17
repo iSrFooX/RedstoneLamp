@@ -29,5 +29,4 @@ public class RemoveBlockResponse extends Response{
     public RemoveBlockResponse(BlockPosition position){
         this.position = position;
     }
-
 }

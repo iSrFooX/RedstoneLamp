@@ -71,7 +71,6 @@ public class Position{
         this.pitch = pitch;
     }
 
-
     public float getX(){
         return x;
     }

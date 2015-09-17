@@ -184,7 +184,6 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
             bb.putInt(flags);
             packets.add(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, address));
 
-
             //byte[] metadata = EntityMetadata.write(player.getMetadata());
             byte[] metadata = player.getMetadata().toBytes();
             bb = BinaryBuffer.newInstance(9 + metadata.length, ByteOrder.BIG_ENDIAN);
@@ -192,7 +191,6 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
             bb.putLong(0); //Player Entity ID is always zero to themselves
             bb.put(metadata);
             packets.add(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, address));
-
 
             bb = BinaryBuffer.newInstance(6, ByteOrder.BIG_ENDIAN);
             bb.putByte(SET_TIME_PACKET);
@@ -255,7 +253,6 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
     public UniversalPacket[] translateQueuedResponse(Response[] responses, Player player){
         return null;
     }
-
 
     private Request[] processBatch(UniversalPacket up){
         List<Request> requests = new ArrayList<>();

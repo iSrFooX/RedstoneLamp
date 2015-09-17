@@ -124,7 +124,9 @@ public class RedstoneTicker{
             throw new IllegalStateException("Ticker is not running and cannot be stopped");
         }
         running = false;
-        while(!lastTickDone) ;
+        while(!lastTickDone){
+            ;
+        }
     }
 
     public synchronized void addDelayedTask(Task task, int delay){

@@ -58,5 +58,4 @@ public class CompressionUtils{
 
         return Arrays.copyOf(uncompressed, len);
     }
-
 }

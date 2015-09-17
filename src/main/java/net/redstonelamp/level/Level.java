@@ -67,7 +67,9 @@ public class Level{
         if(generatorName.equalsIgnoreCase("default") && !new File(params.levelDir + "/" + "db").isDirectory()){
             manager.getServer().getLogger().info("Default worlds have no generator yet, using packaged world.");
             int num = new Random().nextInt(2);
-            if(num == 0) num = num + 1;
+            if(num == 0){
+                num = num + 1;
+            }
             manager.getServer().getLogger().debug("Using world " + num);
             try{
                 setupDefaultWorld(num);
@@ -88,8 +90,9 @@ public class Level{
         try{
             if(!generatorName.equalsIgnoreCase("default")){
                 generator = manager.getGenerator(generatorName).newInstance(this, params);
-            }else
+            }else{
                 generator = new FlatGenerator(this, params);
+            }
         }catch(NullPointerException e){
             throw new LevelLoadException("Unknown level generator " + generatorName);
         }catch(InvocationTargetException e){
