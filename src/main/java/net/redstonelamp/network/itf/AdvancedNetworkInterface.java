@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with RedstoneLamp.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.redstonelamp.network.netInterface;
+package net.redstonelamp.network.itf;
 
 /**
  * An advanced network interface that allows setting and updating the server name, along with

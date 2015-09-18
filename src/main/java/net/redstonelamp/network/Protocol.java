@@ -18,7 +18,7 @@ package net.redstonelamp.network;
 
 import net.redstonelamp.Player;
 import net.redstonelamp.Server;
-import net.redstonelamp.network.netInterface.NetworkInterface;
+import net.redstonelamp.network.itf.NetworkInterface;
 import net.redstonelamp.request.LoginRequest;
 import net.redstonelamp.request.Request;
 import net.redstonelamp.response.Response;

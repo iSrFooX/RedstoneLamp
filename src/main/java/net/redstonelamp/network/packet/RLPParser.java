@@ -18,18 +18,21 @@ package net.redstonelamp.network.packet;
  */
 
 import net.redstonelamp.request.Request;
+import net.redstonelamp.response.Response;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class RLPParser implements Closeable{
     private BufferedReader reader;
     private String sourcePath;
-    private String name, description = "(no description)";
+    private String name = null, description = "(no description)",
+            defaultRequestPackage = "net.redstonelamp.request", defaultResponsePackage = "net.redstonelamp.response";
+    private Map<Byte, Packet> declaredPackets = new HashMap<>();
 
     private Packet currentlyDeclaringPacket = null;
     private int currentLine = 0;
+    private int incId = 0;
 
     public RLPParser(File file) throws IOException{
         this(new FileInputStream(file), file.getCanonicalPath());
@@ -56,13 +59,39 @@ public class RLPParser implements Closeable{
             }
             line = prefix + line;
             prefix = "";
-            List<String> args = Arrays.asList(line.split(" "));
+            String[] words = line.split(" ");
+            List<String> args = new ArrayList<>(words.length);
+            for(String word : words){
+                if(!word.trim().isEmpty()){
+                    args.add(word);
+                }
+            }
             try{
                 handleCommand(args);
             }catch(RuntimeException e){
                 throw error(e);
             }
         }
+        currentLine = 0;
+        if(name == null){
+            throw error("ProtocolName declaration is missing");
+        }
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public String getDescription(){
+        return description;
+    }
+
+    public Map<Byte, Packet> getDeclaredPackets(){
+        return declaredPackets;
+    }
+
+    public String getSourcePath(){
+        return sourcePath;
     }
 
     public int getCurrentLine(){
@@ -74,6 +103,7 @@ public class RLPParser implements Closeable{
         reader.close();
     }
 
+    @SuppressWarnings("unchecked")
     private void handleCommand(List<String> args) throws RLPFormatException{
         String cmd = args.remove(0);
         if(cmd.equalsIgnoreCase("ProtocolName")){
@@ -85,6 +115,9 @@ public class RLPParser implements Closeable{
                 throw error("Attempt to declare packet while older packet not commited");
             }
             currentlyDeclaringPacket = new Packet();
+            if(args.isEmpty()){
+                throw error("Incorrect syntax. Correct syntax: DeclarePacket <hexadecimal packet ID>");
+            }
             currentlyDeclaringPacket.pid = Byte.parseByte(args.get(0), 16);
         }else if(cmd.equalsIgnoreCase("PacketName")){
             if(currentlyDeclaringPacket == null){
@@ -95,19 +128,66 @@ public class RLPParser implements Closeable{
             if(currentlyDeclaringPacket == null){
                 throw error("Attempt to declare packet name while not declaring a packet");
             }
-            Field field = new Field();
-            boolean isUnsigned = args.get(1) == "-unsigned";
+            PacketField field = new PacketField();
+            if(args.size() < 2){
+                throw error("Incorrect syntax. Correct syntax: PacketField <type> [-unsigned] <field name> [comments ...]");
+            }
+            boolean isUnsigned = Objects.equals(args.get(1), "-unsigned");
             if(isUnsigned){
                 args.remove(1);
             }
-            field.type = PacketFieldType.fromString(args.get(0), isUnsigned);
-            if(field.type == null){
-                throw error("Unknown type " + args.get(0));
+            if(args.size() < 2){
+                throw error("Incorrect syntax. Correct syntax: PacketField <type> [-unsigned] <field name> [comments ...]");
             }
-            field.name = args.get(1);
+            String type = args.get(0);
+            if(type.equalsIgnoreCase("skip")){
+                throw error("Incorrect syntax. Correct syntax: PacketField SKIP <length>");
+                field.type = new PacketFieldType.SkipField(Integer.parseInt(args.get(1)));
+                field.name = "skipped field #" + incId++;
+            }else{
+                field.type = PacketFieldType.fromString(type, isUnsigned);
+                if(field.type == null){
+                    throw error("Unknown type " + args.get(0));
+                }
+                field.name = args.get(1);
+            }
             currentlyDeclaringPacket.fields.add(field);
+        }else if(cmd.equalsIgnoreCase("CommitPacket")){
+            declaredPackets.put(currentlyDeclaringPacket.pid, currentlyDeclaringPacket);
+            currentlyDeclaringPacket = null;
+        }else if(cmd.equalsIgnoreCase("AssocRequest")){
+            if(args.isEmpty()){
+                throw error("Incorrect syntax. Correct syntax: AssocRequest <class name>");
+            }
+            String name = args.get(0);
+            Class<? extends Request> req;
+            try{
+                req = Class.forName(defaultRequestPackage + "." + name).asSubclass(Request.class);
+            }catch(ClassNotFoundException e){
+                try{
+                    req = Class.forName(name).asSubclass(Request.class);
+                }catch(ClassNotFoundException e1){
+                    throw error("Unknown class " + name);
+                }
+            }
+            currentlyDeclaringPacket.requestClass = req;
+        }else if(cmd.equalsIgnoreCase("AssocResponse")){
+            if(args.isEmpty()){
+                throw error("Incorrect syntax. Correct syntax: AssocResponse <class name>");
+            }
+            String name = args.get(0);
+            Class<? extends Response> req;
+            try{
+                req = Class.forName(defaultResponsePackage + "." + name).asSubclass(Response.class);
+            }catch(ClassNotFoundException e){
+                try{
+                    req = Class.forName(name).asSubclass(Response.class);
+                }catch(ClassNotFoundException e1){
+                    throw error("Unknown class " + name);
+                }
+            }
+            currentlyDeclaringPacket.responseClass = req;
         }
-        // TODO not finished
     }
     private String implode(String glue, List<String> list){
         StringBuilder builder = new StringBuilder();
@@ -125,17 +205,18 @@ public class RLPParser implements Closeable{
         return new RLPFormatException(msg + " on line " + currentLine + " at " + sourcePath);
     }
     private RLPFormatException error(Throwable t){
-        return new RLPFormatException("Exception thrown on line " + currentLine, t);
+        return new RLPFormatException("Exception caught when executing line " + currentLine + " at " + sourcePath, t);
     }
 
     private class Packet{
         public byte pid;
         public String name;
         public Class<? extends Request> requestClass;
-        public List<Field> fields;
+        public Class<? extends Response> responseClass;
+        public List<PacketField> fields;
     }
 
-    private class Field{
+    private class PacketField{
         public String name;
         public PacketFieldType type;
     }

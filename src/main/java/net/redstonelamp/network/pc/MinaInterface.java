@@ -20,7 +20,7 @@ import net.redstonelamp.Player;
 import net.redstonelamp.Server;
 import net.redstonelamp.network.LowLevelNetworkException;
 import net.redstonelamp.network.UniversalPacket;
-import net.redstonelamp.network.netInterface.AdvancedNetworkInterface;
+import net.redstonelamp.network.itf.AdvancedNetworkInterface;
 import net.redstonelamp.network.pc.codec.MinecraftPacketHeaderDecoder;
 import net.redstonelamp.network.pc.codec.MinecraftPacketHeaderEncoder;
 import net.redstonelamp.network.pc.serializer.ChatSerializer;

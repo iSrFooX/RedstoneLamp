@@ -63,8 +63,10 @@ public abstract class PacketFieldType<T>{
             case "address":
                 return new AddressField();
             case "metadata":
-                // TODO
+                // TODO implement
+                return null;
         }
+        // TODO add literal support
         return null;
     }
 
@@ -251,6 +253,22 @@ public abstract class PacketFieldType<T>{
                 bb.putByte(bite);
             }
             bb.putShort((short) value.getPort());
+        }
+    }
+
+    public static class SkipField extends PacketFieldType<Void>{
+        private int length;
+        public SkipField(int length){
+            this.length = length;
+        }
+        @Override
+        public Void read(BinaryBuffer bb){
+            bb.skip(length);
+            return null;
+        }
+        @Override
+        public void write(BinaryBuffer bb, Void value){
+            bb.put(new byte[length]);
         }
     }
 }

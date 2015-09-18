@@ -26,7 +26,7 @@ import net.redstonelamp.Player;
 import net.redstonelamp.Server;
 import net.redstonelamp.network.LowLevelNetworkException;
 import net.redstonelamp.network.UniversalPacket;
-import net.redstonelamp.network.netInterface.AdvancedNetworkInterface;
+import net.redstonelamp.network.itf.AdvancedNetworkInterface;
 import net.redstonelamp.ticker.CallableTask;
 import net.redstonelamp.ui.ConsoleOut;
 import net.redstonelamp.ui.Log4j2ConsoleOut;

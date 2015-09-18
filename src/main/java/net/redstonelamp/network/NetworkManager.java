@@ -17,7 +17,7 @@
 package net.redstonelamp.network;
 
 import net.redstonelamp.Server;
-import net.redstonelamp.network.netInterface.AdvancedNetworkInterface;
+import net.redstonelamp.network.itf.AdvancedNetworkInterface;
 import net.redstonelamp.ticker.CallableTask;
 
 import java.util.ArrayList;

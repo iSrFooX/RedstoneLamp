@@ -26,15 +26,20 @@ DeclarePacket 01
 # DeclarePacket <hex packet ID>
     PacketName ChatPacket
     # PacketName <packet name>
-    PacketField STRING message
-    # PacketField <BYTE | SHORT | TRIAD|BE_TRIAD|BIG_ENDIAN_TRIAD | LTRIAD|L_TRIAD|LE_TRIAD|LITTLE_ENDIAN_TRIAD | INT|INTEGER | LONG | VAR_INT|VARINT | STRING | VAR_STRING|VARSTRING | FLOAT | DOUBLE | UUID | BOOLEAN | ADDRESS | METADATA> [-unsigned] <field name at the request/response class> [<description ...>]
-    PacketField BYTE position
-    PacketField SHORT -unsigned wordsCount
-    PacketField SKIP 4
     AssocRequest ChatRequest
     # AssocRequest <associated Request class name, may be relative to DefaultRequestPackage>
+        PacketField STRING message
+        # PacketField BYTE|SHORT|TRIAD|BE_TRIAD|BIG_ENDIAN_TRIAD|LTRIAD|L_TRIAD|LE_TRIAD|LITTLE_ENDIAN_TRIAD|INT|INTEGER|LONG|VAR_INT|VARINT|STRING|VAR_STRING|VARSTRING|FLOAT|DOUBLE|UUID|BOOLEAN|ADDRESS|METADATA [-unsigned] <field name at the request/response class> [<comments ...>]
+        # OR
+        # PacketField SKIP <bytes to skip> [<comments ...>]
+        PacketField SHORT -unsigned wordsCount
+        PacketField SKIP 4 here are four bytes that don't exist in the request class
+        CommitRequest
     AssocResponse ChatResponse
     # AssocResponse <name of the Response class to associate to, may be relative to DefaultResponsePackage>
+        PacketField STRING message
+        packetField BYTE position
+        CommitResponse
 CommitPacket
 # CommitPacket
 
