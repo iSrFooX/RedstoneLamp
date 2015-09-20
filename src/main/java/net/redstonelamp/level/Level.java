@@ -68,7 +68,7 @@ public class Level{
             manager.getServer().getLogger().info("Default worlds have no generator yet, using packaged world.");
             int num = new Random().nextInt(2);
             if(num == 0){
-                num = num + 1;
+                num++;
             }
             manager.getServer().getLogger().debug("Using world " + num);
             try{
@@ -123,7 +123,7 @@ public class Level{
         reader.close();
 
         for(String mapping : mappings){
-            FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(dbDir + "/" + mapping), new File("worlds/" + name + "/" + mapping));
+            FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(dbDir + "/" + mapping), new File("worlds/" + name + "/db/" + mapping));
         }
 
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(lvlData), new File("worlds/" + name + "/level.dat"));
