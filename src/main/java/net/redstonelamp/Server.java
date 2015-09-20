@@ -34,6 +34,8 @@ import net.redstonelamp.network.NetworkManager;
 import net.redstonelamp.network.Protocol;
 import net.redstonelamp.network.pc.PCProtocol;
 import net.redstonelamp.network.pe.PEProtocol;
+import net.redstonelamp.player.PlayerDatabase;
+import net.redstonelamp.player.SimplePlayerDatabase;
 import net.redstonelamp.plugin.PluginSystem;
 import net.redstonelamp.request.LoginRequest;
 import net.redstonelamp.response.ChatResponse;

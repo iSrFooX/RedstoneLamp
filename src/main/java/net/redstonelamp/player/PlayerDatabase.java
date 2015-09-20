@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with RedstoneLamp.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.redstonelamp;
+package net.redstonelamp.player;
 
 import net.redstonelamp.inventory.PlayerInventory;
 import net.redstonelamp.level.position.Position;
