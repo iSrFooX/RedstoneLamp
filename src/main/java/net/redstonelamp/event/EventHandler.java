@@ -16,10 +16,14 @@
  */
 package net.redstonelamp.event;
 
-public enum EventPriority {
-    HIGHEST,
-    HIGH,
-    DEFAULT,
-    LOW,
-    LOWEST
+public @interface EventHandler {
+    
+    EventPriority priority() default EventPriority.DEFAULT;
+    
+    EventPlatform platform() default EventPlatform.BOTH;
+    
+    ClientProtocol protocol();
+    
+    boolean ignoreCancelled() default false;
+    
 }

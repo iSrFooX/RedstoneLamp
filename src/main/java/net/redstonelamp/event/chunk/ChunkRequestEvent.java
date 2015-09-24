@@ -14,12 +14,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with RedstoneLamp.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.redstonelamp.event;
+package net.redstonelamp.event.chunk;
 
-public enum EventPriority {
-    HIGHEST,
-    HIGH,
-    DEFAULT,
-    LOW,
-    LOWEST
+import lombok.Getter;
+import net.redstonelamp.Player;
+import net.redstonelamp.event.Event;
+
+public class ChunkRequestEvent extends Event {
+    @Getter private Player player;
+    
+    public ChunkRequestEvent(Player player) {
+        this.player = player;
+    }
 }

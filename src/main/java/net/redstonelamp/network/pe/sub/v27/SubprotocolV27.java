@@ -74,8 +74,8 @@ public class SubprotocolV27 extends Subprotocol implements ProtocolConst27{
                 requests.add(lr);
                 break;
             case TEXT_PACKET:
-                ChatRequest cr = new ChatRequest(up.bb().getByte());
-                switch(cr.type){
+                ChatRequest cr = new ChatRequest("");
+                switch(up.bb().getByte()){
                     case TEXT_CHAT:
                         cr.source = up.bb().getString();
                     case TEXT_RAW:
@@ -90,7 +90,6 @@ public class SubprotocolV27 extends Subprotocol implements ProtocolConst27{
                         }
                         break;
                 }
-                // TODO: Throw PlayerChatEvent
                 requests.add(cr);
                 break;
             case MOVE_PLAYER_PACKET:

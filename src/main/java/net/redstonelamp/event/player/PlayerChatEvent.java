@@ -14,12 +14,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with RedstoneLamp.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.redstonelamp.event;
+package net.redstonelamp.event.player;
 
-public enum EventPriority {
-    HIGHEST,
-    HIGH,
-    DEFAULT,
-    LOW,
-    LOWEST
+import lombok.Getter;
+import net.redstonelamp.Player;
+import net.redstonelamp.event.Cancellable;
+import net.redstonelamp.event.Event;
+
+public class PlayerChatEvent extends Event implements Cancellable {
+    @Getter private Player player;
+    @Getter private String message;
+    private boolean cancelled = false;
+    
+    public PlayerChatEvent(Player player, String message) {
+        this.player = player;
+        this.message = message;
+    }
+    
+    @Override
+    public void cancel() {
+        cancelled = true;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
 }

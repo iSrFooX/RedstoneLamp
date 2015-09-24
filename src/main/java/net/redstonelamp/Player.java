@@ -16,9 +16,16 @@
  */
 package net.redstonelamp;
 
+import java.net.SocketAddress;
+import java.util.UUID;
+
 import net.redstonelamp.block.Block;
 import net.redstonelamp.cmd.exception.InvalidCommandSenderException;
 import net.redstonelamp.entity.PlayerEntity;
+import net.redstonelamp.event.EventExecutor;
+import net.redstonelamp.event.block.*;
+import net.redstonelamp.event.chunk.*;
+import net.redstonelamp.event.player.*;
 import net.redstonelamp.inventory.NBTPlayerInventory;
 import net.redstonelamp.inventory.PlayerInventory;
 import net.redstonelamp.item.Item;
@@ -28,9 +35,6 @@ import net.redstonelamp.network.Protocol;
 import net.redstonelamp.player.PlayerDatabase;
 import net.redstonelamp.request.*;
 import net.redstonelamp.response.*;
-
-import java.net.SocketAddress;
-import java.util.UUID;
 
 /**
  * <strong>Protocol-independent</strong> Player class. Represents a Player on the server
@@ -153,26 +157,35 @@ public class Player extends PlayerEntity{
             loadPlayerData();
 
             LoginResponse response = new LoginResponse(true, gamemode, getHealth(), getPosition().getX(), getPosition().getY(), getPosition().getZ());
-            if(server.getPlayers().size() > server.getMaxPlayers()){
-                response.loginAllowed = false;
-                response.loginNotAllowedReason = "redstonelamp.loginFailed.serverFull";
-                protocol.sendImmediateResponse(response, this);
-                close("", "redstonelamp.loginFailed.serverFull", false);
-                return;
-            }
-            server.getPlayers().stream()
-                    .filter(player -> player != this && player.getNametag().equals(getNametag()))
-                    .forEach(player -> player.close(" left the game", "logged in from another location", true));
-            sendResponse(response);
-            initEntity();
-            server.getLogger().info(username + "[" + address + "] logged in with entity ID " + getEntityID() + " in level \"" + getPosition().getLevel().getName() + "\""
-                            + " at position [x: " + getPosition().getX() + ", y: " + getPosition().getY() + ", z: " + getPosition().getZ() + "]"
-            );
+            PlayerLoginEvent ple = new PlayerLoginEvent(this);
+            EventExecutor.throwEvent(ple);
+            if(!ple.isCancelled()) {
+                if(server.getPlayers().size() > server.getMaxPlayers()){
+                    response.loginAllowed = false;
+                    response.loginNotAllowedReason = "redstonelamp.loginFailed.serverFull";
+                    protocol.sendImmediateResponse(response, this);
+                    close("", "redstonelamp.loginFailed.serverFull", false);
+                    return;
+                }
+                server.getPlayers().stream()
+                        .filter(player -> player != this && player.getNametag().equals(getNametag()))
+                        .forEach(player -> player.close(" left the game", "logged in from another location", true));
+                sendResponse(response);
+                initEntity();
+                server.getLogger().info(username + "[" + address + "] logged in with entity ID " + getEntityID() + " in level \"" + getPosition().getLevel().getName() + "\""
+                                + " at position [x: " + getPosition().getX() + ", y: " + getPosition().getY() + ", z: " + getPosition().getZ() + "]"
+                );
+            } else
+                close("", "Disconnected from server", false);
         }else if(request instanceof ChunkRequest){
+            ChunkRequestEvent cre = new ChunkRequestEvent(this);
+            EventExecutor.throwEvent(cre);
             ChunkRequest r = (ChunkRequest) request;
             ChunkResponse response = new ChunkResponse(getPosition().getLevel().getChunkAt(r.position));
             sendResponse(response);
         }else if(request instanceof SpawnRequest){
+            PlayerSpawnEvent pse = new PlayerSpawnEvent(this);
+            EventExecutor.throwEvent(pse);
             SpawnResponse sr = new SpawnResponse(getPosition());
             sendResponse(sr);
             TeleportResponse tr = new TeleportResponse(getPosition(), true);
@@ -193,50 +206,74 @@ public class Player extends PlayerEntity{
                 } catch (InvalidCommandSenderException e) {
                     e.printStackTrace();
                 }
-            } else
-                server.broadcastMessage("<" + username + "> " + cr.message);
+            } else {
+                PlayerChatEvent pce = new PlayerChatEvent(this, cr.message);
+                EventExecutor.throwEvent(pce);
+                if(!pce.isCancelled())
+                    server.broadcastMessage("<" + username + "> " + cr.message);
+            }
         }else if(request instanceof PlayerMoveRequest){
+            PlayerMoveEvent pme = new PlayerMoveEvent(this);
             PlayerMoveRequest pmr = (PlayerMoveRequest) request;
-            if(gamemode == 1){
-                PlayerMoveResponse response = new PlayerMoveResponse(getEntityID(), pmr.position, pmr.onGround);
-                setPosition(pmr.position);
-                server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
-            } //TODO: Check movement if in survival
+            EventExecutor.throwEvent(pme);
+            if(!pme.isCancelled()) {
+                if(gamemode == 1){
+                    PlayerMoveResponse response = new PlayerMoveResponse(getEntityID(), pmr.position, pmr.onGround);
+                    setPosition(pmr.position);
+                    server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
+                } //TODO: Check movement if in survival
+            }
         }else if(request instanceof PlayerEquipmentRequest){
+            PlayerEquipmentChangeEvent pece = new PlayerEquipmentChangeEvent(this);
             PlayerEquipmentRequest er = (PlayerEquipmentRequest) request;
-            PlayerEquipmentResponse response = new PlayerEquipmentResponse(er.item);
-            server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
+            EventExecutor.throwEvent(pece);
+            if(!pece.isCancelled()) {
+                PlayerEquipmentResponse response = new PlayerEquipmentResponse(er.item);
+                server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
+            }
         }else if(request instanceof AnimateRequest){
+            PlayerAnimateEvent pae = new PlayerAnimateEvent(this);
             AnimateRequest ar = (AnimateRequest) request;
-            AnimateResponse response = new AnimateResponse(ar.actionType);
-            server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
+            EventExecutor.throwEvent(pae);
+            if(!pae.isCancelled()) {
+                AnimateResponse response = new AnimateResponse(ar.actionType);
+                server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
+            }
         }else if(request instanceof BlockPlaceRequest){
+            BlockPlaceEvent bpe = new BlockPlaceEvent();
             BlockPlaceRequest bpr = (BlockPlaceRequest) request;
-            System.out.println("Request to place at: " + bpr.blockPosition);
-            BlockPlaceResponse response = new BlockPlaceResponse(bpr.block, BlockPosition.fromVector3(bpr.blockPosition, getPosition().getLevel()));
-            if(!getPosition().getLevel().isChunkLoaded(new ChunkPosition(bpr.blockPosition.getX() / 16, bpr.blockPosition.getZ() / 16))){
-                server.getLogger().warning(username + " attempted to place block in an unloaded chunk");
-                sendMessage("Attempted to place block in unloaded chunk, hacking?");
-                response.block = new Block(0, (short) 0, 1); //AIR
-                response.placeAllowed = false;
-                sendResponse(response);
-                return;
+            EventExecutor.throwEvent(bpe);
+            if(!bpe.isCancelled()) {
+                System.out.println("Request to place at: " + bpr.blockPosition);
+                BlockPlaceResponse response = new BlockPlaceResponse(bpr.block, BlockPosition.fromVector3(bpr.blockPosition, getPosition().getLevel()));
+                if(!getPosition().getLevel().isChunkLoaded(new ChunkPosition(bpr.blockPosition.getX() / 16, bpr.blockPosition.getZ() / 16))){
+                    server.getLogger().warning(username + " attempted to place block in an unloaded chunk");
+                    sendMessage("Attempted to place block in unloaded chunk, hacking?");
+                    response.block = new Block(0, (short) 0, 1); //AIR
+                    response.placeAllowed = false;
+                    sendResponse(response);
+                    return;
+                }
+                //TODO: Check last place time as to prevent speed placing
+                getPosition().getLevel().setBlock(BlockPosition.fromVector3(bpr.blockPosition, getPosition().getLevel()), bpr.block);
             }
-            //TODO: Check last place time as to prevent speed placing
-            getPosition().getLevel().setBlock(BlockPosition.fromVector3(bpr.blockPosition, getPosition().getLevel()), bpr.block);
         }else if(request instanceof RemoveBlockRequest){
+            BlockBreakEvent bbe = new BlockBreakEvent();
             RemoveBlockRequest rbr = (RemoveBlockRequest) request;
-            System.out.println("Request to remove at: " + rbr.position);
-            RemoveBlockResponse response = new RemoveBlockResponse(rbr.position);
-            if(!getPosition().getLevel().isChunkLoaded(new ChunkPosition(rbr.position.getX() / 16, rbr.position.getZ() / 16))){
-                server.getLogger().warning(username + " attempted to remove block in an unloaded chunk");
-                sendMessage("Attempted to remove block in unloaded chunk, hacking?");
-                sendBlockChange(getPosition().getLevel().getBlock(rbr.position), rbr.position);
-                return;
+            EventExecutor.throwEvent(bbe);
+            if(!bbe.isCancelled()) {
+                System.out.println("Request to remove at: " + rbr.position);
+                RemoveBlockResponse response = new RemoveBlockResponse(rbr.position);
+                if(!getPosition().getLevel().isChunkLoaded(new ChunkPosition(rbr.position.getX() / 16, rbr.position.getZ() / 16))){
+                    server.getLogger().warning(username + " attempted to remove block in an unloaded chunk");
+                    sendMessage("Attempted to remove block in unloaded chunk, hacking?");
+                    sendBlockChange(getPosition().getLevel().getBlock(rbr.position), rbr.position);
+                    return;
+                }
+                //TODO: Check last place time as to prevent speed breaking
+                //getPosition().getLevel().removeBlock(rbr.position);
+                getPosition().getLevel().setBlock(rbr.position, new Block(0, (short) 0, 1));
             }
-            //TODO: Check last place time as to prevent speed breaking
-            //getPosition().getLevel().removeBlock(rbr.position);
-            getPosition().getLevel().setBlock(rbr.position, new Block(0, (short) 0, 1));
         }
     }
 

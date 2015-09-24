@@ -16,10 +16,16 @@
  */
 package net.redstonelamp.event;
 
-public enum EventPriority {
-    HIGHEST,
-    HIGH,
-    DEFAULT,
-    LOW,
-    LOWEST
+public interface Cancellable {
+    /**
+     * Cancels the event
+     */
+    void cancel();
+    
+    /**
+     * Returns true if the event is cancelled
+     * 
+     * @return
+     */
+    boolean isCancelled();
 }
