@@ -16,48 +16,49 @@
  */
 package net.redstonelamp.cmd;
 
-import javax.script.Invocable;
-import javax.script.ScriptException;
-
 import net.redstonelamp.Player;
 import net.redstonelamp.RedstoneLamp;
 import net.redstonelamp.Server;
 import net.redstonelamp.cmd.exception.InvalidCommandSenderException;
 
-public class CommandExecutor {
-    public void execute(String cmd, Object sender) throws InvalidCommandSenderException {
+import javax.script.Invocable;
+import javax.script.ScriptException;
+
+public class CommandExecutor{
+    public void execute(String cmd, Object sender) throws InvalidCommandSenderException{
         Server server = RedstoneLamp.SERVER;
-        if(sender instanceof Server)
-            sender = (Server) sender;
-        else if(sender instanceof Player)
-            sender = (Player) sender;
-        else
+        if(!(sender instanceof Server) && !(sender instanceof Player)){
             throw new InvalidCommandSenderException();
-        
-        if(cmd.startsWith("/"))
+        }
+
+        if(cmd.startsWith("/")){
             cmd = cmd.substring(1);
+        }
         boolean executed = false;
         String[] params = cmd.split(" ");
         CommandSender commandSender = new CommandSender(sender);
         String label = null; //TODO
         //TODO: Command Execution event
-        for(CommandListener l : server.getCommandManager().getListeners()) {
-            if(l != null) {
+        for(CommandListener l : server.getCommandManager().getListeners()){
+            if(l != null){
                 l.onCommand(commandSender, params[0], label, params);
                 executed = true;
             }
         }
-        for(Invocable i : server.getScriptManager().getScripts()) {
-            try {
+        for(Invocable i : server.getScriptManager().getScripts()){
+            try{
                 Object exc = i.invokeFunction("onCommand", commandSender, params[0], label, params);
-                if(exc != null && (boolean) exc)
+                if(exc != null && (boolean) exc){
                     executed = true;
-            } catch (ScriptException e) {
+                }
+            }catch(ScriptException e){
                 e.printStackTrace();
-            } catch (NoSuchMethodException e) {}
+            }catch(NoSuchMethodException e){
+            }
         }
-        
-        if(!executed)
+
+        if(!executed){
             commandSender.sendMessage("Unknown command! For help, use \"/help\"");
+        }
     }
 }

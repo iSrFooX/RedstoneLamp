@@ -50,6 +50,6 @@ public class AnimateRequest extends Request{
          * This action is when the player is ordered to wake
          * up.
          */
-        WAKE_UP;
+        WAKE_UP
     }
 }

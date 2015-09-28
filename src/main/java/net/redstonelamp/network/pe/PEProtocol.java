@@ -55,6 +55,7 @@ public class PEProtocol extends Protocol{
         super(manager);
         subprotocols = new PESubprotocolManager(this);
         sender = new PeChunkSender(this);
+        //_interface = new JRakLibPlusInterface(manager.getServer(), this);
         _interface = new JRakLibInterface(manager.getServer(), this);
 
         subprotocols.registerSubprotocol(new SubprotocolV27(subprotocols));
@@ -104,7 +105,7 @@ public class PEProtocol extends Protocol{
             }else{
                 getManager().getServer().getLogger().info("Could not find protocol for " + packet.getAddress().toString() + ", disconnecting.");
                 defaultNoSubprotocolFoundDisconnect(packet.getAddress());
-                ((JRakLibInterface) _interface)._internalClose(packet.getAddress(), "no subprotocol found");
+                ((PEInterface) _interface)._internalClose(packet.getAddress(), "no subprotocol found");
                 return new Request[]{null};
             }
         }
@@ -114,9 +115,10 @@ public class PEProtocol extends Protocol{
     protected UniversalPacket[] _sendResponse(Response response, Player player){
         if(addressToSubprotocols.containsKey(player.getAddress().toString())){
             return addressToSubprotocols.get(player.getAddress().toString()).translateResponse(response, player);
-        }else{
+        }/*else{
             throw new IllegalArgumentException("Player " + player.getAddress().toString() + " not found in subprotocol map!");
-        }
+        }*/
+        return new UniversalPacket[0];
     }
 
     @Override
@@ -139,7 +141,7 @@ public class PEProtocol extends Protocol{
     @Override
     protected void onClose(Player player){
         addressToSubprotocols.remove(player.getAddress().toString());
-        ((JRakLibInterface) _interface)._internalClose(player.getAddress(), "server disconnect");
+        ((PEInterface) _interface)._internalClose(player.getAddress(), "server disconnect");
     }
 
     protected void openSession(String session){

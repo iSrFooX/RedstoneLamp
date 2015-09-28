@@ -16,27 +16,28 @@
  */
 package net.redstonelamp.script;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
 import lombok.Getter;
 import lombok.Setter;
 import net.redstonelamp.Server;
 import net.redstonelamp.ui.ConsoleOut;
 import net.redstonelamp.ui.Logger;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class ScriptManager {
     @Getter public File scriptDir = new File("./scripts");
-    
-    @Getter public ArrayList<Invocable> scripts = new ArrayList<Invocable>();
-    @Getter public HashMap<String, ScriptAPI> scriptAPI = new HashMap<String, ScriptAPI>();
+
+    @Getter
+    public ArrayList<Invocable> scripts = new ArrayList<>();
+    @Getter
+    public HashMap<String, ScriptAPI> scriptAPI = new HashMap<>();
     
     @Getter @Setter public ScriptEngineManager manager;
     @Getter @Setter public ScriptEngine engine;
@@ -51,17 +52,9 @@ public class ScriptManager {
         try {
             Constructor<?> c = server.getLogger().getConsoleOutClass().getConstructor(String.class);
             engine.put("api", new DefaultScriptAPI(server, new Logger((ConsoleOut) c.newInstance("Script"))));
-        } catch (SecurityException e) {
+        }catch(SecurityException | IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e){
             e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {}
+        }
         loader = new ScriptLoader(this);
     }
     
@@ -77,9 +70,7 @@ public class ScriptManager {
         for(ScriptAPI api : getScriptAPI().values()) {
             try {
                 engine.put(api.getClass().getSimpleName().toLowerCase(), api.getClass().newInstance());
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
+            }catch(InstantiationException | IllegalAccessException e){
                 e.printStackTrace();
             }
         }

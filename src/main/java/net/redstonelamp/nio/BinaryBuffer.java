@@ -16,6 +16,10 @@
  */
 package net.redstonelamp.nio;
 
+import net.redstonelamp.item.Item;
+import net.redstonelamp.utils.BinaryUtils;
+import org.spout.nbt.CompoundTag;
+
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -200,6 +204,26 @@ public class BinaryBuffer{
         return new String(get(getUnsignedShort()));
     }
 
+    public Item getSlot(){
+        short id = getShort();
+        if(id <= 0){
+            return new Item(0, (short) 0, 0);
+        }
+        int count = getByte();
+        short data = getShort();
+
+        int len = getUnsignedShort();
+        if(len > 0){
+            byte[] nbt = get(len);
+
+            Item i = new Item(id, data, count);
+            i.setCompoundTag((CompoundTag) BinaryUtils.readNBTTag(nbt));
+            return i;
+        }else{
+            return new Item(id, data, count);
+        }
+    }
+
     /**
      * Get a single varint prefixed string from the buffer (varint bytes + str bytes)
      *
@@ -256,6 +280,20 @@ public class BinaryBuffer{
         putLong(uuid.getLeastSignificantBits());
     }
 
+    public void putSlot(Item item){
+        if(item.getId() == 0){
+            putShort((short) 0);
+            return;
+        }
+        putShort((short) item.getId());
+        putByte((byte) item.getCount());
+        putShort(item.getMeta());
+
+        byte[] nbt = item.getCompoundTag() != null ? BinaryUtils.writeNBT(item.getCompoundTag()) : new byte[0];
+        putShort((short) nbt.length);
+        put(nbt);
+    }
+
     /**
      * Puts a Google Protocol Buffers VarInt into the buffer
      * Code is from: https://gist.github.com/thinkofdeath/e975ddee04e9c87faf22
@@ -295,6 +333,15 @@ public class BinaryBuffer{
      */
     public ByteOrder getOrder(){
         return bb.order();
+    }
+
+    /**
+     * Set the ByteOrder of the underlying ByteBuffer
+     *
+     * @param order The ByteOrder to be set to.
+     */
+    public void setOrder(ByteOrder order){
+        bb.order(order);
     }
 
     /**

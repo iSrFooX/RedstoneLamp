@@ -16,15 +16,13 @@
  */
 package net.redstonelamp;
 
-import java.net.SocketAddress;
-import java.util.UUID;
-
 import net.redstonelamp.block.Block;
 import net.redstonelamp.cmd.exception.InvalidCommandSenderException;
 import net.redstonelamp.entity.PlayerEntity;
 import net.redstonelamp.event.EventExecutor;
-import net.redstonelamp.event.block.*;
-import net.redstonelamp.event.chunk.*;
+import net.redstonelamp.event.block.BlockBreakEvent;
+import net.redstonelamp.event.block.BlockPlaceEvent;
+import net.redstonelamp.event.chunk.ChunkRequestEvent;
 import net.redstonelamp.event.player.*;
 import net.redstonelamp.inventory.NBTPlayerInventory;
 import net.redstonelamp.inventory.PlayerInventory;
@@ -35,6 +33,10 @@ import net.redstonelamp.network.Protocol;
 import net.redstonelamp.player.PlayerDatabase;
 import net.redstonelamp.request.*;
 import net.redstonelamp.response.*;
+import net.redstonelamp.utils.ChatFormat;
+
+import java.net.SocketAddress;
+import java.util.UUID;
 
 /**
  * <strong>Protocol-independent</strong> Player class. Represents a Player on the server
@@ -169,7 +171,7 @@ public class Player extends PlayerEntity{
                 }
                 server.getPlayers().stream()
                         .filter(player -> player != this && player.getNametag().equals(getNametag()))
-                        .forEach(player -> player.close(" left the game", "logged in from another location", true));
+                        .forEach(player -> player.close("redstonelamp.playerLeft", "logged in from another location", true));
                 sendResponse(response);
                 initEntity();
                 server.getLogger().info(username + "[" + address + "] logged in with entity ID " + getEntityID() + " in level \"" + getPosition().getLevel().getName() + "\""
@@ -197,7 +199,8 @@ public class Player extends PlayerEntity{
             });
 
             server.getLogger().debug("Player " + username + " spawned (took " + (System.currentTimeMillis() - startLogin) + " ms)");
-            server.broadcastMessage(new ChatResponse.ChatTranslation("%multiplayer.player.joined", new String[]{username}));
+            spawned = true;
+            server.broadcastMessage(new ChatResponse.ChatTranslation(ChatFormat.YELLOW + "%multiplayer.player.joined", new String[]{username}));
         }else if(request instanceof ChatRequest){
             ChatRequest cr = (ChatRequest) request;
             if(cr.message.startsWith("/")) {
@@ -244,7 +247,7 @@ public class Player extends PlayerEntity{
             BlockPlaceRequest bpr = (BlockPlaceRequest) request;
             EventExecutor.throwEvent(bpe);
             if(!bpe.isCancelled()) {
-                System.out.println("Request to place at: " + bpr.blockPosition);
+                //System.out.println("Request to place at: " + bpr.blockPosition);
                 BlockPlaceResponse response = new BlockPlaceResponse(bpr.block, BlockPosition.fromVector3(bpr.blockPosition, getPosition().getLevel()));
                 if(!getPosition().getLevel().isChunkLoaded(new ChunkPosition(bpr.blockPosition.getX() / 16, bpr.blockPosition.getZ() / 16))){
                     server.getLogger().warning(username + " attempted to place block in an unloaded chunk");
@@ -307,7 +310,14 @@ public class Player extends PlayerEntity{
         server.savePlayerData();
 
         if(!leaveMessage.isEmpty()){
-            server.broadcastMessage(username + leaveMessage);
+            switch(leaveMessage){
+                case "redstonelamp.playerLeft":
+                    server.broadcastMessage(new ChatResponse.ChatTranslation(ChatFormat.YELLOW + "%multiplayer.player.left", new String[]{username}));
+                    break;
+                default:
+                    server.broadcastMessage(username + leaveMessage);
+                    break;
+            }
         }
     }
 
@@ -346,5 +356,9 @@ public class Player extends PlayerEntity{
 
     public boolean isConnected(){
         return connected;
+    }
+
+    public PlayerInventory getInventory(){
+        return inventory;
     }
 }

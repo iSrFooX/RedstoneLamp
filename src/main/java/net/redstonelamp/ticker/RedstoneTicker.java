@@ -146,7 +146,6 @@ public class RedstoneTicker{
         }
         running = false;
         while(!lastTickDone){
-            ;
         }
     }
 

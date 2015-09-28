@@ -16,18 +16,21 @@
  */
 package net.redstonelamp.cmd;
 
+import lombok.Getter;
+import net.redstonelamp.cmd.defaults.HelpCommand;
+import net.redstonelamp.cmd.defaults.StopCommand;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import lombok.Getter;
-import net.redstonelamp.cmd.defaults.*;
-
 public class CommandManager {
     @Getter private CommandExecutor commandExecutor = new CommandExecutor();
-    
-    @Getter private HashMap<String, String> commands = new HashMap<String, String>();
-    @Getter private List<CommandListener> listeners = new ArrayList<CommandListener>();
+
+    @Getter
+    private HashMap<String, String> commands = new HashMap<>();
+    @Getter
+    private List<CommandListener> listeners = new ArrayList<>();
     
     public CommandManager() {
         registerDefaultCommands();

@@ -102,14 +102,19 @@ public abstract class Protocol{
      * @param player   The Player the response is being sent from
      */
     public void sendResponse(Response response, Player player){
-        UniversalPacket[] packets = _sendResponse(response, player);
-        for(UniversalPacket packet : packets){
-            try{
-                _interface.sendPacket(packet, false);
-            }catch(LowLevelNetworkException e){
-                manager.getServer().getLogger().error(e.getClass().getName() + " while sending response " + response.getClass().getName() + ": " + e.getMessage());
-                manager.getServer().getLogger().trace(e);
+        try{
+            UniversalPacket[] packets = _sendResponse(response, player);
+            for(UniversalPacket packet : packets){
+                try{
+                    _interface.sendPacket(packet, false);
+                }catch(LowLevelNetworkException e){
+                    manager.getServer().getLogger().error(e.getClass().getName() + " while sending response " + response.getClass().getName() + ": " + e.getMessage());
+                    manager.getServer().getLogger().trace(e);
+                }
             }
+        }catch(IllegalArgumentException e){
+            e.printStackTrace();
+            //TODO
         }
     }
 
@@ -245,6 +250,15 @@ public abstract class Protocol{
      */
     public Server getServer(){
         return manager.getServer();
+    }
+
+    /**
+     * Get the NetworkInterface this protocol uses to read and write packets.
+     *
+     * @return The NetworkInterface used by this protocol.
+     */
+    public NetworkInterface getInterface(){
+        return _interface;
     }
 
     @Override

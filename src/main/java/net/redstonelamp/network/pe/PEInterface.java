@@ -14,21 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with RedstoneLamp.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.redstonelamp.network.pe.sub.v27;
+package net.redstonelamp.network.pe;
+
+import net.redstonelamp.network.itf.AdvancedNetworkInterface;
+
+import java.net.SocketAddress;
 
 /**
- * Different flags for UpdateBlockPacket (protocol 27)
- * <br>
- * From https://github.com/PocketMine/PocketMine-MP/blob/master/src/pocketmine/network/protocol/UpdateBlockPacket.php
+ * Extension from AdvancedNetworkInterface, has internal methods used by PEProtocol
  *
- * @author RedstoneLamp Team and PocketMine Team
+ * @author RedstoneLamp Team
  */
-public final class UpdateBlockPacketFlagsV27{
-    public static final byte FLAG_NONE = 0b0000;
-    public static final byte FLAG_NEIGHBORS = 0b0001;
-    public static final byte FLAG_NETWORK = 0b0010;
-    public static final byte FLAG_NOGRAPHIC = 0b0100;
-    public static final byte FLAG_PRIORITY = 0b1000;
-    public static final byte FLAG_ALL = FLAG_NEIGHBORS | FLAG_NETWORK;
-    public static final byte FLAG_ALL_PRIORITY = FLAG_ALL | FLAG_PRIORITY;
+public interface PEInterface extends AdvancedNetworkInterface{
+    void _internalClose(SocketAddress address, String reason);
 }

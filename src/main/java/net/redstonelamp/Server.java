@@ -16,15 +16,6 @@
  */
 package net.redstonelamp;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Stream;
-
 import lombok.Getter;
 import net.redstonelamp.cmd.CommandManager;
 import net.redstonelamp.config.ServerConfig;
@@ -37,7 +28,6 @@ import net.redstonelamp.network.Protocol;
 import net.redstonelamp.network.pc.PCProtocol;
 import net.redstonelamp.network.pe.PEProtocol;
 import net.redstonelamp.player.PlayerDatabase;
-import net.redstonelamp.player.SimplePlayerDatabase;
 import net.redstonelamp.plugin.PluginSystem;
 import net.redstonelamp.request.LoginRequest;
 import net.redstonelamp.response.ChatResponse;
@@ -46,6 +36,16 @@ import net.redstonelamp.script.ScriptManager;
 import net.redstonelamp.ticker.RedstoneTicker;
 import net.redstonelamp.ui.Log4j2ConsoleOut;
 import net.redstonelamp.ui.Logger;
+import net.redstonelamp.utils.ChatFormat;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
 
 /**
  * The base RedstoneLamp server, which handles the ticker.
@@ -118,7 +118,9 @@ public class Server implements Runnable{
         });
 
         logger.info("Loading player data...");
-        playerDatabase = new SimplePlayerDatabase(this); //TODO: Correct database
+        //playerDatabase = new SimplePlayerDatabase(this); //TODO: Correct database
+        //playerDatabase = new LevelDBPlayerDatabase(this);
+        playerDatabase = new NBTPlayerDatabase(this);
         try{
             playerDatabase.loadFrom(new File("players.dat"));
             ticker.addDelayedRepeatingTask(tick -> {
@@ -138,6 +140,7 @@ public class Server implements Runnable{
         addShutdownTask(() -> {
             try{
                 playerDatabase.saveTo(new File("players.dat"));
+                playerDatabase.release();
             }catch(IOException e){
                 logger.fatal("FAILED TO SAVE PLAYER DATABASE! " + e.getClass().getName() + ": " + e.getMessage());
             }
@@ -230,14 +233,14 @@ public class Server implements Runnable{
     }
 
     public void broadcastMessage(String message){
-        logger.info("[Chat]: " + message);
+        logger.info("[Chat]: " + ChatFormat.stripColors(message));
         for(Player player : players){
             player.sendMessage(message);
         }
     }
 
     public void broadcastMessage(ChatResponse.ChatTranslation translation){
-        logger.info("[Chat]: " + translation.message.replaceAll("%", "") + " " + Arrays.toString(translation.params));
+        logger.info("[Chat]: " + ChatFormat.stripColors(translation.message.replaceAll("%", "")) + " " + ChatFormat.stripColors(Arrays.toString(translation.params)));
         ChatResponse cr = new ChatResponse(translation.message);
         cr.translation = translation;
         for(Player player : players){
