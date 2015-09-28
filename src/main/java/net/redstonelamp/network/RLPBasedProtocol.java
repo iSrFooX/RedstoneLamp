@@ -1,14 +1,5 @@
 package net.redstonelamp.network;
 
-import jdk.nashorn.api.scripting.URLReader;
-import net.redstonelamp.Player;
-import net.redstonelamp.network.packet.RLPFormatException;
-import net.redstonelamp.network.packet.RLPParser;
-import net.redstonelamp.request.Request;
-import net.redstonelamp.response.Response;
-
-import java.io.IOException;
-
 /*
  * This file is part of RedstoneLamp.
  *
@@ -25,6 +16,16 @@ import java.io.IOException;
  * You should have received a copy of the GNU Lesser General Public License
  * along with RedstoneLamp.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+import jdk.nashorn.api.scripting.URLReader;
+import net.redstonelamp.Player;
+import net.redstonelamp.network.packet.RLPFormatException;
+import net.redstonelamp.network.packet.RLPParser;
+import net.redstonelamp.request.Request;
+import net.redstonelamp.response.Response;
+
+import java.io.IOException;
+
 public abstract class RLPBasedProtocol extends Protocol{
     private RLPParser parser;
     public RLPBasedProtocol(NetworkManager mgr, String name) throws IOException, RLPFormatException{
