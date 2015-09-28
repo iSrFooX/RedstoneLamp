@@ -24,24 +24,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class CommandManager {
-    @Getter private CommandExecutor commandExecutor = new CommandExecutor();
+public class CommandManager{
+    @Getter
+    private CommandExecutor commandExecutor = new CommandExecutor();
 
     @Getter
     private HashMap<String, String> commands = new HashMap<>();
     @Getter
     private List<CommandListener> listeners = new ArrayList<>();
-    
-    public CommandManager() {
+
+    public CommandManager(){
         registerDefaultCommands();
     }
-    
-    public void registerCommand(String cmd, String description, CommandListener listener) {
+
+    public void registerCommand(String cmd, String description, CommandListener listener){
         commands.put(cmd, description);
         listeners.add(listener);
     }
-    
-    private void registerDefaultCommands() {
+
+    private void registerDefaultCommands(){
         registerCommand("help", "View a list of all commands", new HelpCommand());
         registerCommand("stop", "Stops the server", new StopCommand());
     }

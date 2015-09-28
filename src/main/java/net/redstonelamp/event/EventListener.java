@@ -16,6 +16,7 @@
  */
 package net.redstonelamp.event;
 
-public interface EventListener {
-    public default void onEvent(Event e) {}
+public interface EventListener{
+    public default void onEvent(Event e){
+    }
 }

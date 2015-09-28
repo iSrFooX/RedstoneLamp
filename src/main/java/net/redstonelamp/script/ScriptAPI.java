@@ -16,6 +16,6 @@
  */
 package net.redstonelamp.script;
 
-public interface ScriptAPI {
-    
+public interface ScriptAPI{
+
 }

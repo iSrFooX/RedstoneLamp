@@ -51,7 +51,7 @@ public class JRakLibInterface implements ServerInstance, PEInterface{
 
     private Queue<UniversalPacket> packetQueue = new ConcurrentLinkedQueue<>();
 
-    public JRakLibInterface(Server server, PEProtocol protocol) {
+    public JRakLibInterface(Server server, PEProtocol protocol){
         this.server = server;
         this.protocol = protocol;
 
@@ -100,13 +100,13 @@ public class JRakLibInterface implements ServerInstance, PEInterface{
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(String name){
         handler.sendOption("name", "MCPE;" + name + ";" + PENetworkConst.MCPE_PROTOCOL + ";" + PENetworkConst.MCPE_VERSION + ";" + server.getPlayers().size() + ";" + server.getMaxPlayers());
     }
 
     @Override
-    public UniversalPacket readPacket() throws LowLevelNetworkException {
-        if(!packetQueue.isEmpty()) {
+    public UniversalPacket readPacket() throws LowLevelNetworkException{
+        if(!packetQueue.isEmpty()){
             return packetQueue.remove();
         }
         return null;

@@ -26,7 +26,7 @@ public class ChatRequest extends Request{
     public String source;
     public String message;
 
-    public ChatRequest(String message) {
+    public ChatRequest(String message){
         this.message = message;
     }
 

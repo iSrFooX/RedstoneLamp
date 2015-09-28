@@ -62,11 +62,14 @@ public class Server implements Runnable{
     private final NetworkManager network;
     private final List<Player> players = new CopyOnWriteArrayList<>();
     private final PluginSystem pluginSystem;
-    @Getter private final ScriptManager scriptManager;
-    @Getter private CommandManager commandManager;
-    @Getter private EventManager eventManager;
+    @Getter
+    private final ScriptManager scriptManager;
+    @Getter
+    private CommandManager commandManager;
+    @Getter
+    private EventManager eventManager;
     private final PlayerDatabase playerDatabase;
-    
+
     private String motd;
     private int maxPlayers;
     private LevelManager levelManager;
@@ -93,16 +96,16 @@ public class Server implements Runnable{
 
         network.registerProtocol(new PEProtocol(network));
         network.registerProtocol(new PCProtocol(network));
-        
+
         eventManager = new EventManager();
         commandManager = new CommandManager();
         scriptManager = new ScriptManager(this);
-        
+
         pluginSystem = new PluginSystem();
         pluginSystem.init(this, new Logger(new Log4j2ConsoleOut("PluginSystem")));
         pluginSystem.loadPlugins();
         pluginSystem.enablePlugins();
-        
+
         scriptManager.initScriptAPI();
         scriptManager.loadScripts();
 
@@ -342,7 +345,7 @@ public class Server implements Runnable{
         }
     }
 
-    public void stop() {
+    public void stop(){
         //TODO
     }
 }

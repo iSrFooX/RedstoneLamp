@@ -21,21 +21,22 @@ import net.redstonelamp.Player;
 import net.redstonelamp.event.Cancellable;
 import net.redstonelamp.event.Event;
 
-public class PlayerMoveEvent extends Event implements Cancellable {
-    @Getter private Player player;
+public class PlayerMoveEvent extends Event implements Cancellable{
+    @Getter
+    private Player player;
     private boolean cancelled = false;
-    
-    public PlayerMoveEvent(Player player) {
+
+    public PlayerMoveEvent(Player player){
         this.player = player;
     }
 
     @Override
-    public void cancel() {
+    public void cancel(){
         cancelled = true;
     }
 
     @Override
-    public boolean isCancelled() {
+    public boolean isCancelled(){
         return cancelled;
     }
 }

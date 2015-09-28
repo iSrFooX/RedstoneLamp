@@ -161,7 +161,7 @@ public class Player extends PlayerEntity{
             LoginResponse response = new LoginResponse(true, gamemode, getHealth(), getPosition().getX(), getPosition().getY(), getPosition().getZ());
             PlayerLoginEvent ple = new PlayerLoginEvent(this);
             EventExecutor.throwEvent(ple);
-            if(!ple.isCancelled()) {
+            if(!ple.isCancelled()){
                 if(server.getPlayers().size() > server.getMaxPlayers()){
                     response.loginAllowed = false;
                     response.loginNotAllowedReason = "redstonelamp.loginFailed.serverFull";
@@ -177,8 +177,9 @@ public class Player extends PlayerEntity{
                 server.getLogger().info(username + "[" + address + "] logged in with entity ID " + getEntityID() + " in level \"" + getPosition().getLevel().getName() + "\""
                                 + " at position [x: " + getPosition().getX() + ", y: " + getPosition().getY() + ", z: " + getPosition().getZ() + "]"
                 );
-            } else
+            }else{
                 close("", "Disconnected from server", false);
+            }
         }else if(request instanceof ChunkRequest){
             ChunkRequestEvent cre = new ChunkRequestEvent(this);
             EventExecutor.throwEvent(cre);
@@ -203,23 +204,24 @@ public class Player extends PlayerEntity{
             server.broadcastMessage(new ChatResponse.ChatTranslation(ChatFormat.YELLOW + "%multiplayer.player.joined", new String[]{username}));
         }else if(request instanceof ChatRequest){
             ChatRequest cr = (ChatRequest) request;
-            if(cr.message.startsWith("/")) {
-                try {
+            if(cr.message.startsWith("/")){
+                try{
                     server.getCommandManager().getCommandExecutor().execute(cr.message, this);
-                } catch (InvalidCommandSenderException e) {
+                }catch(InvalidCommandSenderException e){
                     e.printStackTrace();
                 }
-            } else {
+            }else{
                 PlayerChatEvent pce = new PlayerChatEvent(this, cr.message);
                 EventExecutor.throwEvent(pce);
-                if(!pce.isCancelled())
+                if(!pce.isCancelled()){
                     server.broadcastMessage("<" + username + "> " + cr.message);
+                }
             }
         }else if(request instanceof PlayerMoveRequest){
             PlayerMoveEvent pme = new PlayerMoveEvent(this);
             PlayerMoveRequest pmr = (PlayerMoveRequest) request;
             EventExecutor.throwEvent(pme);
-            if(!pme.isCancelled()) {
+            if(!pme.isCancelled()){
                 if(gamemode == 1){
                     PlayerMoveResponse response = new PlayerMoveResponse(getEntityID(), pmr.position, pmr.onGround);
                     setPosition(pmr.position);
@@ -230,7 +232,7 @@ public class Player extends PlayerEntity{
             PlayerEquipmentChangeEvent pece = new PlayerEquipmentChangeEvent(this);
             PlayerEquipmentRequest er = (PlayerEquipmentRequest) request;
             EventExecutor.throwEvent(pece);
-            if(!pece.isCancelled()) {
+            if(!pece.isCancelled()){
                 PlayerEquipmentResponse response = new PlayerEquipmentResponse(er.item);
                 server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
             }
@@ -238,7 +240,7 @@ public class Player extends PlayerEntity{
             PlayerAnimateEvent pae = new PlayerAnimateEvent(this);
             AnimateRequest ar = (AnimateRequest) request;
             EventExecutor.throwEvent(pae);
-            if(!pae.isCancelled()) {
+            if(!pae.isCancelled()){
                 AnimateResponse response = new AnimateResponse(ar.actionType);
                 server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
             }
@@ -246,7 +248,7 @@ public class Player extends PlayerEntity{
             BlockPlaceEvent bpe = new BlockPlaceEvent();
             BlockPlaceRequest bpr = (BlockPlaceRequest) request;
             EventExecutor.throwEvent(bpe);
-            if(!bpe.isCancelled()) {
+            if(!bpe.isCancelled()){
                 //System.out.println("Request to place at: " + bpr.blockPosition);
                 BlockPlaceResponse response = new BlockPlaceResponse(bpr.block, BlockPosition.fromVector3(bpr.blockPosition, getPosition().getLevel()));
                 if(!getPosition().getLevel().isChunkLoaded(new ChunkPosition(bpr.blockPosition.getX() / 16, bpr.blockPosition.getZ() / 16))){
@@ -264,7 +266,7 @@ public class Player extends PlayerEntity{
             BlockBreakEvent bbe = new BlockBreakEvent();
             RemoveBlockRequest rbr = (RemoveBlockRequest) request;
             EventExecutor.throwEvent(bbe);
-            if(!bbe.isCancelled()) {
+            if(!bbe.isCancelled()){
                 System.out.println("Request to remove at: " + rbr.position);
                 RemoveBlockResponse response = new RemoveBlockResponse(rbr.position);
                 if(!getPosition().getLevel().isChunkLoaded(new ChunkPosition(rbr.position.getX() / 16, rbr.position.getZ() / 16))){

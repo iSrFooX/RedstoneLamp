@@ -16,6 +16,6 @@
  */
 package net.redstonelamp.cmd;
 
-public @interface CommandHandler {
-    
+public @interface CommandHandler{
+
 }

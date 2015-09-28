@@ -82,7 +82,7 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
 
             case TEXT_PACKET:
                 ChatRequest cr = new ChatRequest("");
-                switch (up.bb().getByte()) {
+                switch(up.bb().getByte()){
                     case TEXT_POPUP:
                     case TEXT_CHAT:
                         cr.source = up.bb().getString();
@@ -162,11 +162,11 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
         List<UniversalPacket> packets = new CopyOnWriteArrayList<>();
         SocketAddress address = player.getAddress();
         BinaryBuffer bb;
-        if(response instanceof LoginResponse) {
+        if(response instanceof LoginResponse){
             LoginResponse lr = (LoginResponse) response;
-            if (!lr.loginAllowed) {
+            if(!lr.loginAllowed){
                 String message;
-                switch (lr.loginNotAllowedReason) {
+                switch(lr.loginNotAllowedReason){
                     case LoginResponse.DEFAULT_loginNotAllowedReason:
                         message = "disconnectionScreen.noReason";
                         break;
@@ -181,7 +181,7 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
                 bb.putByte(DISCONNECT_PACKET);
                 bb.putString(message);
                 packets.add(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, address));
-            } else {
+            }else{
                 bb = BinaryBuffer.newInstance(5, ByteOrder.BIG_ENDIAN);
                 bb.putByte(PLAY_STATUS_PACKET);
                 bb.putInt(0); //LOGIN_SUCCESS
@@ -230,9 +230,9 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
 
                 getProtocol().getChunkSender().registerChunkRequests(getProtocol().getServer().getPlayer(address), 96);
             }
-        } else if(response instanceof DisconnectResponse) {
+        }else if(response instanceof DisconnectResponse){
             DisconnectResponse dr = (DisconnectResponse) response;
-            if(dr.notifyClient) {
+            if(dr.notifyClient){
                 bb = BinaryBuffer.newInstance(3 + dr.reason.getBytes().length, ByteOrder.BIG_ENDIAN);
                 bb.putByte(DISCONNECT_PACKET);
                 bb.putString(dr.reason);
@@ -315,22 +315,22 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
             }
             bb.putLong(player.getEntityID());
             packets.add(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, address));
-        } else if(response instanceof ChatResponse) {
+        }else if(response instanceof ChatResponse){
             ChatResponse cr = (ChatResponse) response;
             bb = BinaryBuffer.newInstance(0, ByteOrder.BIG_ENDIAN);
             bb.putByte(TEXT_PACKET);
-            if(cr.translation != null) {
+            if(cr.translation != null){
                 bb.putByte(TEXT_TRANSLATION);
                 bb.putString(cr.translation.message);
                 bb.putByte((byte) cr.translation.params.length);
-                for(String param : cr.translation.params) {
+                for(String param : cr.translation.params){
                     bb.putString(param);
                 }
-            } else if(cr.source != null){
+            }else if(cr.source != null){
                 bb.putByte(TEXT_CHAT);
                 bb.putString(cr.source);
                 bb.putString(cr.message);
-            } else {
+            }else{
                 bb.putByte(TEXT_RAW);
                 bb.putString(cr.message);
             }

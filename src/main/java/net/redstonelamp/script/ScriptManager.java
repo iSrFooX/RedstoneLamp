@@ -31,25 +31,32 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class ScriptManager {
-    @Getter public File scriptDir = new File("./scripts");
+public class ScriptManager{
+    @Getter
+    public File scriptDir = new File("./scripts");
 
     @Getter
     public ArrayList<Invocable> scripts = new ArrayList<>();
     @Getter
     public HashMap<String, ScriptAPI> scriptAPI = new HashMap<>();
-    
-    @Getter @Setter public ScriptEngineManager manager;
-    @Getter @Setter public ScriptEngine engine;
-    
-    @Getter public Server server;
-    @Getter public ScriptLoader loader;
-    
-    public ScriptManager(Server server) {
+
+    @Getter
+    @Setter
+    public ScriptEngineManager manager;
+    @Getter
+    @Setter
+    public ScriptEngine engine;
+
+    @Getter
+    public Server server;
+    @Getter
+    public ScriptLoader loader;
+
+    public ScriptManager(Server server){
         this.server = server;
         manager = new ScriptEngineManager();
         engine = manager.getEngineByName("JavaScript");
-        try {
+        try{
             Constructor<?> c = server.getLogger().getConsoleOutClass().getConstructor(String.class);
             engine.put("api", new DefaultScriptAPI(server, new Logger((ConsoleOut) c.newInstance("Script"))));
         }catch(SecurityException | IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e){
@@ -57,18 +64,18 @@ public class ScriptManager {
         }
         loader = new ScriptLoader(this);
     }
-    
-    public void addScriptAPI(ScriptAPI api) {
+
+    public void addScriptAPI(ScriptAPI api){
         addScriptAPI(api.getClass().getSimpleName().toLowerCase(), api);
     }
-    
-    public void addScriptAPI(String name, ScriptAPI api) {
+
+    public void addScriptAPI(String name, ScriptAPI api){
         scriptAPI.put(name, api);
     }
-    
-    public void initScriptAPI() {
-        for(ScriptAPI api : getScriptAPI().values()) {
-            try {
+
+    public void initScriptAPI(){
+        for(ScriptAPI api : getScriptAPI().values()){
+            try{
                 engine.put(api.getClass().getSimpleName().toLowerCase(), api.getClass().newInstance());
             }catch(InstantiationException | IllegalAccessException e){
                 e.printStackTrace();
@@ -76,10 +83,11 @@ public class ScriptManager {
         }
     }
 
-    public void loadScripts() {
-        if(!scriptDir.isDirectory())
+    public void loadScripts(){
+        if(!scriptDir.isDirectory()){
             scriptDir.mkdirs();
-        for(File script : scriptDir.listFiles()) {
+        }
+        for(File script : scriptDir.listFiles()){
             loader.loadScript(script);
         }
     }

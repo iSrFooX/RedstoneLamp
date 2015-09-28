@@ -16,8 +16,8 @@
  */
 package net.redstonelamp.event;
 
-public class Event {
-    public String getEventName() {
+public class Event{
+    public String getEventName(){
         return getClass().getSimpleName();
     }
 }

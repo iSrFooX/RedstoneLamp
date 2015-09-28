@@ -16,23 +16,23 @@
  */
 package net.redstonelamp.cmd.defaults;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import net.redstonelamp.RedstoneLamp;
 import net.redstonelamp.cmd.CommandListener;
 import net.redstonelamp.cmd.CommandSender;
 
-public class HelpCommand implements CommandListener {
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+public class HelpCommand implements CommandListener{
     @Override
-    public void onCommand(CommandSender sender, String cmd, String label, String[] params) {
-        switch(cmd) {
+    public void onCommand(CommandSender sender, String cmd, String label, String[] params){
+        switch(cmd){
             case "help":
                 HashMap<String, String> commands = RedstoneLamp.SERVER.getCommandManager().getCommands();
-                for(Entry<String, String> command : commands.entrySet()) {
+                for(Entry<String, String> command : commands.entrySet()){
                     sender.sendMessage("/" + command.getKey() + " - " + command.getValue());
                 }
-            break;
+                break;
         }
     }
 }

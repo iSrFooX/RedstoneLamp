@@ -108,9 +108,7 @@ public class RedstoneTicker{
                 task.getTask().onFinalize();
             }
         }
-        
-        
-        
+
         lastTickDone = true;
     }
 
@@ -123,18 +121,20 @@ public class RedstoneTicker{
         for(RegisteredTask task : taskArray){
             task.check(tick);
         }
-        
+
         String line = null;
-        try {
-            if (cli.ready()) {
+        try{
+            if(cli.ready()){
                 line = cli.readLine();
-                if (line != null)
+                if(line != null){
                     server.getCommandManager().getCommandExecutor().execute(line, server);
+                }
             }
-        } catch (InvalidCommandSenderException e) {
+        }catch(InvalidCommandSenderException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } catch (IOException e) {}
+        }catch(IOException e){
+        }
     }
 
     /**

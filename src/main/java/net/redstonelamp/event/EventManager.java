@@ -21,11 +21,11 @@ import net.redstonelamp.plugin.Plugin;
 
 import java.util.ArrayList;
 
-public class EventManager {
+public class EventManager{
     @Getter
     private ArrayList<EventListener> listeners = new ArrayList<>();
-    
-    public void registerEvents(EventListener listener, Plugin plugin) { //The plugin variable will be used later
+
+    public void registerEvents(EventListener listener, Plugin plugin){ //The plugin variable will be used later
         listeners.add(listener);
     }
 }

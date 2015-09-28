@@ -16,56 +16,56 @@
  */
 package net.redstonelamp.script;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.script.Invocable;
 import javax.script.ScriptException;
+import java.io.*;
 
-import org.apache.commons.io.FilenameUtils;
+public class ScriptLoader{
+    @Getter
+    private ScriptManager scriptManager;
 
-import lombok.Getter;
-
-public class ScriptLoader {
-    @Getter private ScriptManager scriptManager;
-    
-    public ScriptLoader(ScriptManager scriptMgr) {
+    public ScriptLoader(ScriptManager scriptMgr){
         scriptManager = scriptMgr;
     }
-    
-    public void loadScript(File script) {
-        if(!scriptManager.scriptDir.isDirectory())
+
+    public void loadScript(File script){
+        if(!scriptManager.scriptDir.isDirectory()){
             scriptManager.scriptDir.mkdirs();
+        }
         String name = FilenameUtils.removeExtension(script.getName());
-        try {
+        try{
             scriptManager.server.getLogger().info("Loading script " + name + "...");
             Reader reader = new InputStreamReader(new FileInputStream(script));
             scriptManager.engine.eval(reader);
             Invocable inv = (Invocable) scriptManager.engine;
             scriptManager.getScripts().add(inv);
             inv.invokeFunction("onEnable");
-        } catch (FileNotFoundException e) {
+        }catch(FileNotFoundException e){
             scriptManager.server.getLogger().info("Unable to locate script file " + name + "!");
-        } catch (ScriptException e) {
+        }catch(ScriptException e){
             e.printStackTrace();
-        } catch (NoSuchMethodException e) {}
+        }catch(NoSuchMethodException e){
+        }
     }
-    
-    public void disableScript(Invocable script) {
-        if(!scriptManager.scriptDir.isDirectory())
+
+    public void disableScript(Invocable script){
+        if(!scriptManager.scriptDir.isDirectory()){
             scriptManager.scriptDir.mkdirs();
-        try {
-            for(int i = 0; i < scriptManager.getScripts().size() + 1; i++) {
+        }
+        try{
+            for(int i = 0; i < scriptManager.getScripts().size() + 1; i++){
                 Invocable inv = scriptManager.getScripts().get(i);
-                if(inv.equals(script))
+                if(inv.equals(script)){
                     scriptManager.getScripts().remove(i);
+                }
             }
             script.invokeFunction("onDisable");
-        } catch (ScriptException e) {
+        }catch(ScriptException e){
             e.printStackTrace();
-        } catch (NoSuchMethodException e) {}
+        }catch(NoSuchMethodException e){
+        }
     }
 }
