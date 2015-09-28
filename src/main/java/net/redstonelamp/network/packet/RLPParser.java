@@ -141,7 +141,6 @@ public class RLPParser implements Closeable{
             }
             String type = args.get(0);
             if(type.equalsIgnoreCase("skip")){
-                throw error("Incorrect syntax. Correct syntax: PacketField SKIP <length>");
                 field.type = new PacketFieldType.SkipField(Integer.parseInt(args.get(1)));
                 field.name = "skipped field #" + incId++;
             }else{
