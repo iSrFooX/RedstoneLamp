@@ -14,12 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with RedstoneLamp.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.redstonelamp;
+package net.redstonelamp.player;
 
+import net.redstonelamp.Server;
 import net.redstonelamp.inventory.PlayerInventory;
 import net.redstonelamp.level.Level;
 import net.redstonelamp.level.position.Position;
-import net.redstonelamp.player.PlayerDatabase;
 import org.spout.nbt.*;
 import org.spout.nbt.stream.NBTInputStream;
 import org.spout.nbt.stream.NBTOutputStream;
