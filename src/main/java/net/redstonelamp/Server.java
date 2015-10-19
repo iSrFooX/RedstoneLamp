@@ -38,7 +38,6 @@ import net.redstonelamp.level.Level;
 import net.redstonelamp.level.LevelManager;
 import net.redstonelamp.network.NetworkManager;
 import net.redstonelamp.network.Protocol;
-import net.redstonelamp.network.pc.PCProtocol;
 import net.redstonelamp.network.pe.PEProtocol;
 import net.redstonelamp.plugin.PluginManager;
 import net.redstonelamp.plugin.PluginSystem;
@@ -105,7 +104,7 @@ public class Server implements Runnable, CommandSender{
         translationManager = new TranslationManager(this);
 
         network.registerProtocol(new PEProtocol(network));
-        network.registerProtocol(new PCProtocol(network));
+        //network.registerProtocol(new PCProtocol(network));
 
         addShutdownTask(network::shutdown);
         
