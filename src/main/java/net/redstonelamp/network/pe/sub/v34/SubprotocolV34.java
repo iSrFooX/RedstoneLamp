@@ -182,6 +182,14 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
                     case PlayerActionsV34.ACTION_STOP_SPRINT:
                         requests.add(new SprintRequest(false));
                         break;
+
+                    case PlayerActionsV34.ACTION_START_SNEAK:
+                        requests.add(new SneakRequest(true));
+                        break;
+
+                    case PlayerActionsV34.ACTION_STOP_SNEAK:
+                        requests.add(new SneakRequest(false));
+                        break;
                 }
                 break;
         }
@@ -487,6 +495,17 @@ public class SubprotocolV34 extends Subprotocol implements ProtocolConst34{
             bb.putByte(PLAYER_ACTION_PACKET);
             bb.putLong(sr.player.getEntityID());
             bb.putInt(sr.starting ? PlayerActionsV34.ACTION_START_SPRINT : PlayerActionsV34.ACTION_STOP_SPRINT);
+            bb.putInt(Math.round(sr.player.getPosition().getX()));
+            bb.putInt(Math.round(sr.player.getPosition().getY()));
+            bb.putInt(Math.round(sr.player.getPosition().getZ()));
+            bb.putInt(Side.UP);
+            packets.add(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, address));
+        } else if(response instanceof SneakResponse) {
+            SneakResponse sr = (SneakResponse) response;
+            bb = BinaryBuffer.newInstance(29, ByteOrder.BIG_ENDIAN);
+            bb.putByte(PLAYER_ACTION_PACKET);
+            bb.putLong(sr.player.getEntityID());
+            bb.putInt(sr.starting ? PlayerActionsV34.ACTION_START_SNEAK : PlayerActionsV34.ACTION_STOP_SNEAK);
             bb.putInt(Math.round(sr.player.getPosition().getX()));
             bb.putInt(Math.round(sr.player.getPosition().getY()));
             bb.putInt(Math.round(sr.player.getPosition().getZ()));

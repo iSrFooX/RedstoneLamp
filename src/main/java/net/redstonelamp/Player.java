@@ -314,13 +314,26 @@ public class Player extends PlayerEntity implements CommandSender{
             server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), new SetHeldItemResponse(getEntityID(), inventory.getItemInHand(), inventory.getSelectedSlot(), inventory.getItemInHandSlot()));
         } else if(request instanceof SprintRequest) {
             boolean starting = ((SprintRequest) request).starting;
-            if(!isSprinting() && starting) {
-                sprinting = true;
-            }
-            if(isSprinting() && !starting) {
-                sprinting = false;
+            synchronized (this) {
+                if (!isSprinting() && starting) {
+                    sprinting = true;
+                }
+                if (isSprinting() && !starting) {
+                    sprinting = false;
+                }
             }
             server.broadcastResponse(new SprintResponse(starting, this));
+        } else if(request instanceof SneakRequest) {
+            boolean starting = ((SneakRequest) request).starting;
+            synchronized (this) {
+                if (!isSneaking() && starting) {
+                    sneaking = true;
+                }
+                if (isSneaking() && !starting) {
+                    sneaking = false;
+                }
+            }
+            server.broadcastResponse(new SneakResponse(starting, this));
         }
     }
 
