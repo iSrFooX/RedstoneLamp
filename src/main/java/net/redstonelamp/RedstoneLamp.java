@@ -67,9 +67,9 @@ public class RedstoneLamp{
             String option = args[0];
             if(option.startsWith("-")) {
                 if(option.equalsIgnoreCase("--silent") || option.equalsIgnoreCase("-s")) {
-                    Logger logger = new Logger(new SilentConsoleOut("RedstoneLamp"));
+                    Logger logger = new Logger(new SilentConsoleOut("RedstoneLamp-Silent"));
                     System.setOut(new SystemConsoleOut(logger));
-                    return logger;
+                    return new Logger(new Log4j2ConsoleOut("RedstoneLamp")); //So we can log to file
                 }
             }
         }
