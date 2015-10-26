@@ -2,7 +2,7 @@
 
 RedstoneLamp is open source Minecraft server software. Currently we support:
 
-- MCPE v0.12.1 (In development)
+- MCPE v0.12.3 (In development)
 - MCPE v0.11.1 (development ceased, currently most stable version supported)
 - MCPC 15w35e (In development, Low Priority)
 

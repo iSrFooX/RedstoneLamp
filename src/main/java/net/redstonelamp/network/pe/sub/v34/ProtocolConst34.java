@@ -17,7 +17,7 @@
 package net.redstonelamp.network.pe.sub.v34;
 
 /**
- * This "interface" contains the MCPE Networking constants for MCPE 0.12.1 (protocol 34)
+ * This "interface" contains the MCPE Networking constants for MCPE 0.12.3 (protocol 34)
  * <br>
  * This file is based on the PocketMine-MP file at https://github.com/PocketMine/PocketMine-MP/blob/mcpe-0.12/src/pocketmine/network/protocol/Info.php
  * PocketMine-MP is licensed under the LGPL v3. All credit to the PocketMine team
@@ -28,7 +28,7 @@ public interface ProtocolConst34{
     /**
      * The Minecraft: Pocket Edition version this software implements.
      */
-    public static final String MCPE_VERSION = "0.12.1";
+    public static final String MCPE_VERSION = "0.12.3";
 
     /**
      * The Minecraft: Pocket Edition network protocol version this software implements.

@@ -44,6 +44,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *
  * @author RedstoneLamp Team
  */
+@Deprecated
 public class JRakLibPlusInterface implements ServerInterface, AdvancedNetworkInterface {
     private final Server server;
     private final PEProtocol protocol;

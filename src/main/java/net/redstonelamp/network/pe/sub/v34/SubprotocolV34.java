@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
 
 /**
- * A subprotocol implementation for the MCPE version 0.12.1 (protocol 34)
+ * A subprotocol implementation for the MCPE version 0.12.3 (protocol 34)
  *
  * @author RedstoneLamp Team
  */
