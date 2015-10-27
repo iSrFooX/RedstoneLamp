@@ -6,13 +6,13 @@ RedstoneLamp is open source Minecraft server software. Currently we support:
 - MCPE v0.11.1 (development ceased, currently most stable version supported)
 - MCPC 15w35e (In development, Low Priority)
 
-You can find more information at http://redstonelamp.net and http://forums.redstonelamp.net
+You can find more information at http://redstonelampmc.com and http://forums.redstonelampmc.com
 
 #Links
-RedstoneLamp - http://RedstoneLamp.net
+RedstoneLamp - http://RedstoneLampMC.com
 
-RedstoneLamp Forums - http://forums.RedstoneLamp.net
+RedstoneLamp Forums - http://forums.RedstoneLampMC.com
 
-RedstoneLamp Documentation - http://docs.RedstoneLamp.net
+RedstoneLamp Documentation - http://docs.RedstoneLampMC.com
 
-Get Plugins - http://forums.RedstoneLamp.net/resources/
+Get Plugins - http://forums.RedstoneLampMC.com/resources/
