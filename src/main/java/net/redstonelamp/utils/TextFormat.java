@@ -24,7 +24,7 @@ import java.util.Map;
  *
  * @author RedstoneLamp Team
  */
-public enum ChatFormat{
+public enum TextFormat {
     BLACK('0', false),
     DARK_BLUE('1', false),
     DARK_GREEN('2', false),
@@ -50,44 +50,43 @@ public enum ChatFormat{
     RESET('p', false);
 
     public final static char ESCAPE = '\u00A7';
-    public final static Map<Character, ChatFormat> mapByChar = new HashMap<>();
+    public final static Map<Character, TextFormat> mapByChar = new HashMap<>();
 
     private final char colorCode;
     private final boolean format;
     private final String asString;
 
-    ChatFormat(char colorCode, boolean format){
+    private TextFormat(char colorCode, boolean format){
         this.colorCode = colorCode;
         this.format = format;
-        asString = new String(new char[]{ESCAPE, colorCode});
+        asString = new String(new char[] {ESCAPE, colorCode});
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return asString;
     }
 
-    public static ChatFormat getByChar(char c){
+    public static TextFormat getByChar(char c){
         return mapByChar.get(c);
     }
 
-    static{
-        for(ChatFormat format : values()){
+    static {
+        for(TextFormat format : values()){
             mapByChar.put(format.colorCode, format);
         }
     }
 
-    public boolean isFormatChar(){
+    public boolean isFormatChar() {
         return format;
     }
 
-    public static String stripColors(String input){
+    public static String stripColors(String input) {
         char[] ri = input.toCharArray();
         StringBuilder stripped = new StringBuilder();
-        for(int i = 0; i < ri.length; i++){
-            if(ri[i] == ESCAPE){
-                i += 2;
-            }
+        for(int i = 0; i < ri.length; i++) {
+            if(ri[i] == ESCAPE)
+                i+=2;
             stripped.append(ri[i]);
         }
         return stripped.toString();

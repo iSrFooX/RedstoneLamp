@@ -16,26 +16,6 @@
  */
 package net.redstonelamp.network.pc;
 
-import net.redstonelamp.Player;
-import net.redstonelamp.Server;
-import net.redstonelamp.network.LowLevelNetworkException;
-import net.redstonelamp.network.UniversalPacket;
-import net.redstonelamp.network.itf.AdvancedNetworkInterface;
-import net.redstonelamp.network.pc.codec.MinecraftPacketHeaderDecoder;
-import net.redstonelamp.network.pc.codec.MinecraftPacketHeaderEncoder;
-import net.redstonelamp.network.pc.serializer.ChatSerializer;
-import net.redstonelamp.nio.BinaryBuffer;
-import net.redstonelamp.ui.ConsoleOut;
-import net.redstonelamp.ui.Logger;
-import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.core.service.IoHandlerAdapter;
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.logging.LoggingFilter;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.json.simple.JSONObject;
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -46,9 +26,33 @@ import java.nio.ByteOrder;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.apache.mina.core.service.IoAcceptor;
+import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.filter.logging.LoggingFilter;
+import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import net.redstonelamp.Player;
+import net.redstonelamp.Server;
+import net.redstonelamp.network.LowLevelNetworkException;
+import net.redstonelamp.network.UniversalPacket;
+import net.redstonelamp.network.netInterface.AdvancedNetworkInterface;
+import net.redstonelamp.network.pc.codec.MinecraftPacketHeaderDecoder;
+import net.redstonelamp.network.pc.codec.MinecraftPacketHeaderEncoder;
+import net.redstonelamp.network.pc.serializer.ChatSerializer;
+import net.redstonelamp.network.pc.serializer.PingSerializer;
+import net.redstonelamp.nio.BinaryBuffer;
+import net.redstonelamp.ui.ConsoleOut;
+import net.redstonelamp.ui.Logger;
 
 /**
  * An AdvancedNetworkInterface implementation of an Apache MINA handler for
@@ -75,7 +79,7 @@ public class MinaInterface extends IoHandlerAdapter implements AdvancedNetworkIn
         setupLogger();
 
         acceptor = new NioSocketAcceptor();
-        acceptor.getFilterChain().addLast("logger", new LoggingFilter()); //TODO: fix the debug output
+        //acceptor.getFilterChain().addLast("logger", new LoggingFilter()); //TODO: fix the debug output
         acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new MinecraftPacketHeaderEncoder(this), new MinecraftPacketHeaderDecoder(this)));
 
         acceptor.setHandler(this);
@@ -135,7 +139,7 @@ public class MinaInterface extends IoHandlerAdapter implements AdvancedNetworkIn
                 if(state != null && state == ProtocolState.STATE_LOGIN){
                     player.close("", "connection timed out", true);
                 }else if(state != null && state == ProtocolState.STATE_PLAY){
-                    player.close("redstonelamp.playerLeft", "connection timed out", true);
+                    player.close("redstonelamp.translation.player.left", "connection timed out", true);
                 }
             }
         }
@@ -152,7 +156,7 @@ public class MinaInterface extends IoHandlerAdapter implements AdvancedNetworkIn
                 return;
             }
             if(oldState != null && oldState == ProtocolState.STATE_PLAY){
-                player.close("redstonelamp.playerLeft", "connection closed", false);
+                player.close("redstonelamp.translation.player.left", "connection closed", false);
             }else if(oldState != null && oldState == ProtocolState.STATE_LOGIN){
                 player.close("", "connection closed", false);
             }
@@ -215,51 +219,24 @@ public class MinaInterface extends IoHandlerAdapter implements AdvancedNetworkIn
         }
 
         if(states.get(session.getRemoteAddress().toString()) == ProtocolState.STATE_STATUS){
-            switch(id){
+        	BinaryBuffer bb = BinaryBuffer.newInstance(0, ByteOrder.BIG_ENDIAN);
+        	switch(id){
                 case PCNetworkConst.STATUS_REQUEST:
-                    sendStatusResponse(session.getRemoteAddress());
+                    bb.putVarInt(PCNetworkConst.STATUS_RESPONSE);
+                    bb.putVarString(PingSerializer.getStatusResponse(server, name));
+                    sendPacket(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, session.getRemoteAddress()), true);
                     break;
-
                 case PCNetworkConst.STATUS_PING:
                     long payload = up.bb().getLong();
-                    BinaryBuffer bb = BinaryBuffer.newInstance(9, ByteOrder.BIG_ENDIAN);
                     bb.putVarInt(PCNetworkConst.STATUS_PONG);
                     bb.putLong(payload);
-                    sendPacket(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, session.getRemoteAddress()), false);
+                    sendPacket(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, session.getRemoteAddress()), true);
                     break;
             }
         }else{
             up.bb().setPosition(0);
             packetQueue.add(up);
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void sendStatusResponse(SocketAddress address) throws LowLevelNetworkException{
-        JSONObject root = new JSONObject();
-
-        JSONObject version = new JSONObject();
-        version.put("name", PCNetworkConst.MC_VERSION);
-        version.put("protocol", PCNetworkConst.MC_PROTOCOL);
-
-        JSONObject players = new JSONObject();
-        players.put("max", server.getMaxPlayers());
-        players.put("online", server.getPlayers().size());
-        //TODO: put sample
-
-        JSONObject description = new JSONObject();
-        description.put("text", name);
-
-        root.put("version", version);
-        root.put("players", players);
-        root.put("description", description);
-        //TODO: favicon
-
-        BinaryBuffer bb = BinaryBuffer.newInstance(0, ByteOrder.BIG_ENDIAN);
-        bb.putVarInt(PCNetworkConst.STATUS_RESPONSE);
-        bb.putVarString(root.toJSONString());
-
-        sendPacket(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, address), false);
     }
 
     @Override
@@ -282,5 +259,10 @@ public class MinaInterface extends IoHandlerAdapter implements AdvancedNetworkIn
             return;
         }
         throw new LowLevelNetworkException("Failed to find session for: " + packet.getAddress().toString());
+    }
+
+    @Override
+    public void shutdown() throws LowLevelNetworkException {
+        this.acceptor.unbind();
     }
 }

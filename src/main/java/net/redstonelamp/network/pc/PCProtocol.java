@@ -94,7 +94,7 @@ public class PCProtocol extends Protocol implements PCNetworkConst{
             case LOGIN_LOGIN_START:
                 //TODO: Implementing encryption: move login request to EncryptionResponse handle
                 String name = packet.bb().getVarString();
-                LoginRequest lr = new LoginRequest(name, UUID.nameUUIDFromBytes(name.getBytes()));
+                LoginRequest lr = new LoginRequest(name, "minecraft.desktop-19", UUID.nameUUIDFromBytes(name.getBytes()));
                 lr.skin = new byte[64 * 64 * 4];
                 requests.add(lr);
                 break;
@@ -118,7 +118,7 @@ public class PCProtocol extends Protocol implements PCNetworkConst{
 
             case PLAY_SERVERBOUND_CHAT_MESSAGE:
                 String message = packet.bb().getVarString();
-                getServer().broadcastMessage("<" + getServer().getPlayer(packet.getAddress()).getNametag() + "> " + message);
+                getServer().broadcastMessage("<" + getServer().getPlayer(packet.getAddress()).getName() + "> " + message);
                 break;
 
             default:
@@ -180,7 +180,7 @@ public class PCProtocol extends Protocol implements PCNetworkConst{
                 bb = BinaryBuffer.newInstance(0, ByteOrder.BIG_ENDIAN);
                 bb.putVarInt(LOGIN_LOGIN_SUCCESS);
                 bb.putVarString(player.getUuid().toString()); //Login Success packet sends the UUID as a string
-                bb.putVarString(player.getNametag());
+                bb.putVarString(player.getName());
                 packets.add(new UniversalPacket(bb.toArray(), ByteOrder.BIG_ENDIAN, player.getAddress()));
                 ((MinaInterface) _interface).updateProtocolState(ProtocolState.STATE_PLAY, player.getAddress());
 

@@ -19,16 +19,16 @@ package net.redstonelamp.event.block;
 import net.redstonelamp.event.Cancellable;
 import net.redstonelamp.event.Event;
 
-public class BlockPlaceEvent extends Event implements Cancellable{
+public class BlockPlaceEvent extends Event implements Cancellable {
     private boolean cancelled = false;
-
+    
     @Override
-    public void cancel(){
-        cancelled = true;
+    public void setCancelled(boolean cancelled) {
+    	this.cancelled = cancelled;
     }
 
     @Override
-    public boolean isCancelled(){
+    public boolean isCancelled() {
         return cancelled;
     }
 }

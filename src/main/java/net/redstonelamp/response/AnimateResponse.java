@@ -25,8 +25,10 @@ import net.redstonelamp.request.AnimateRequest;
  */
 public class AnimateResponse extends Response{
     public AnimateRequest.ActionType actionType;
+    public long entityID;
 
-    public AnimateResponse(AnimateRequest.ActionType actionType){
+    public AnimateResponse(AnimateRequest.ActionType actionType, long entityID){
         this.actionType = actionType;
+        this.entityID = entityID;
     }
 }

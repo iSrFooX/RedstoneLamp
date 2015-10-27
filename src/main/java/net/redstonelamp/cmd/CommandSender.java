@@ -16,23 +16,25 @@
  */
 package net.redstonelamp.cmd;
 
-import lombok.Getter;
-import net.redstonelamp.Player;
-import net.redstonelamp.Server;
+import net.redstonelamp.permission.Permission;
+import net.redstonelamp.response.ChatResponse;
 
-public class CommandSender{
-    @Getter
-    private Object sender;
-
-    public CommandSender(Object sender){
-        this.sender = sender;
-    }
-
-    public void sendMessage(String message){
-        if(sender instanceof Player){
-            ((Player) sender).sendMessage(message);
-        }else if(sender instanceof Server){
-            ((Server) sender).getLogger().info(message);
-        }
-    }
+public interface CommandSender {
+	
+	public String getName();
+	
+	public boolean hasOp();
+	
+	public default boolean hasPermission(String permission) {
+		return this.hasOp();
+	}
+	
+	public default boolean hasPermission(Permission permission) {
+		return this.hasPermission(permission.toString());
+	}
+	
+	public void sendMessage(String message);
+	
+	public void sendMessage(ChatResponse.ChatTranslation translation);
+	
 }

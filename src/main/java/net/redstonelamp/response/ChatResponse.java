@@ -29,12 +29,17 @@ public class ChatResponse extends Response{
     }
 
     public static class ChatTranslation{
-        public final String message;
+        public String message;
         public final String[] params;
 
         public ChatTranslation(String message, String[] params){
             this.message = message;
             this.params = params;
+        }
+        
+        @Override
+        public String toString() {
+        	return String.format(message, (Object[]) params);
         }
     }
 }

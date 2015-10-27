@@ -16,15 +16,15 @@
  */
 package net.redstonelamp.ticker;
 
-import net.redstonelamp.Server;
-import net.redstonelamp.cmd.exception.InvalidCommandSenderException;
-import net.redstonelamp.utils.AntiSpam;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.redstonelamp.Server;
+import net.redstonelamp.cmd.exception.CommandException;
+import net.redstonelamp.utils.AntiSpam;
 
 /**
  * The ticker used by RedstoneLamp.
@@ -108,7 +108,9 @@ public class RedstoneTicker{
                 task.getTask().onFinalize();
             }
         }
-
+        
+        
+        
         lastTickDone = true;
     }
 
@@ -119,22 +121,23 @@ public class RedstoneTicker{
             tasks.toArray(taskArray);
         }
         for(RegisteredTask task : taskArray){
+            long start = System.currentTimeMillis();
             task.check(tick);
+            long elapsed = System.currentTimeMillis() - start;
+            if(elapsed >= 20) server.getLogger().debug("Task took "+elapsed+"ms, "+task.getTask());
         }
-
+        
         String line = null;
-        try{
-            if(cli.ready()){
+        try {
+            if (cli.ready()) {
                 line = cli.readLine();
-                if(line != null){
-                    server.getCommandManager().getCommandExecutor().execute(line, server);
-                }
+                if (line != null)
+                    server.getCommandManager().executeCommand(line, server);
             }
-        }catch(InvalidCommandSenderException e){
+        } catch (CommandException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }catch(IOException e){
-        }
+        } catch (IOException e) {}
     }
 
     /**
@@ -145,8 +148,6 @@ public class RedstoneTicker{
             throw new IllegalStateException("Ticker is not running and cannot be stopped");
         }
         running = false;
-        while(!lastTickDone){
-        }
     }
 
     public synchronized void addDelayedTask(Task task, int delay){

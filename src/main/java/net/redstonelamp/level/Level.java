@@ -16,14 +16,18 @@
  */
 package net.redstonelamp.level;
 
+import net.redstonelamp.Player;
 import net.redstonelamp.block.Block;
 import net.redstonelamp.entity.EntityManager;
+import net.redstonelamp.item.Item;
+import net.redstonelamp.item.Items;
 import net.redstonelamp.level.generator.FlatGenerator;
 import net.redstonelamp.level.generator.Generator;
 import net.redstonelamp.level.position.BlockPosition;
 import net.redstonelamp.level.position.Position;
 import net.redstonelamp.level.provider.LevelLoadException;
 import net.redstonelamp.level.provider.LevelProvider;
+import net.redstonelamp.math.Vector3;
 import net.redstonelamp.response.BlockPlaceResponse;
 import net.redstonelamp.response.RemoveBlockResponse;
 import org.apache.commons.io.FileUtils;
@@ -188,9 +192,9 @@ public class Level{
     }
 
     public void setBlock(BlockPosition position, Block block){
-        Chunk c = getChunkAt(new ChunkPosition(position.getX() / 16, position.getZ() / 16));
-        c.setBlockId((byte) block.getId(), position.getX() & 0xf, position.getY() & 0x7f, position.getZ() & 0xf);
-        c.setBlockMeta((byte) block.getMeta(), position.getX() & 0xf, position.getY() & 0x7f, position.getZ() & 0xf);
+        Chunk c = getChunkAt(new ChunkPosition(position.getX() >> 4, position.getZ() >> 4));
+        c.setBlockId((byte) block.getId(), position.getX() & 0x0f, position.getY() & 0x7f, position.getZ() & 0x0f);
+        c.setBlockMeta((byte) block.getMeta(), position.getX() & 0x0f, position.getY() & 0x7f, position.getZ() & 0x0f);
         if(!blockPlaceQueue.offer(new BlockPlaceResponse(block, position))){
             //Queue is full, send immediately then
             sendBlockQueues();
@@ -199,9 +203,9 @@ public class Level{
     }
 
     public void removeBlock(BlockPosition position){
-        Chunk c = getChunkAt(new ChunkPosition(position.getX() / 16, position.getZ() / 16));
-        c.setBlockId((byte) 0, position.getX() & 0xf, position.getY() & 0x7f, position.getZ() & 0xf); //Set block to AIR
-        c.setBlockMeta((byte) 0, position.getX() & 0xf, position.getY() & 0x7f, position.getZ() & 0xf);
+        Chunk c = getChunkAt(new ChunkPosition(position.getX() >> 4, position.getZ() >> 4));
+        c.setBlockId((byte) 0, position.getX() & 0x0f, position.getY() & 0x7f, position.getZ() & 0x0f); //Set block to AIR
+        c.setBlockMeta((byte) 0, position.getX() & 0x0f, position.getY() & 0x7f, position.getZ() & 0x0f);
         if(!removeBlockQueue.offer(new RemoveBlockResponse(position))){
             //Queue is full, send immediately then
             sendBlockQueues();
@@ -210,10 +214,11 @@ public class Level{
     }
 
     public Block getBlock(BlockPosition position){
-        Chunk c = getChunkAt(new ChunkPosition(position.getX() / 16, position.getZ() / 16));
-        byte id = c.getBlockId(position.getX() & 0xf, position.getY() & 0x7f, position.getZ() & 0xf);
-        byte meta = c.getBlockMeta(position.getX() & 0xf, position.getY() & 0x7f, position.getZ() & 0xf);
-        return new Block(id, meta, 1);
+        Chunk c = getChunkAt(new ChunkPosition(position.getX() >> 4, position.getZ() >> 4));
+        byte id = c.getBlockId(position.getX() & 0x0f, position.getY() & 0x7f, position.getZ() & 0x0f);
+        byte meta = c.getBlockMeta(position.getX() & 0x0f, position.getY() & 0x7f, position.getZ() & 0x0f);
+        //return new Block(id, meta, 1);
+        return (Block) Block.get(id, meta, 1);
     }
 
     public LevelManager getManager(){

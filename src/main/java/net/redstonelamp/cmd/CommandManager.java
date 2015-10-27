@@ -16,34 +16,30 @@
  */
 package net.redstonelamp.cmd;
 
-import lombok.Getter;
-import net.redstonelamp.cmd.defaults.HelpCommand;
-import net.redstonelamp.cmd.defaults.StopCommand;
+import java.util.Arrays;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import net.redstonelamp.cmd.exception.CommandException;
+import net.redstonelamp.response.ChatResponse;
+import net.redstonelamp.utils.TextFormat;
 
-public class CommandManager{
-    @Getter
-    private CommandExecutor commandExecutor = new CommandExecutor();
-
-    @Getter
-    private HashMap<String, String> commands = new HashMap<>();
-    @Getter
-    private List<CommandListener> listeners = new ArrayList<>();
-
-    public CommandManager(){
-        registerDefaultCommands();
+public class CommandManager {
+	
+	public void executeCommand(String cmd, CommandSender sender) throws CommandException{
+        if(cmd.startsWith("/"))
+            cmd = cmd.substring(1);
+        String label = cmd.split(" ")[0];
+        String[] args = (String[]) Arrays.copyOfRange(cmd.split(" "), 1, cmd.split(" ").length);
+        Command command= Command.getByLabel(label);
+        if(command != null) {
+        	if(!command.getExecutor().onCommand(sender, command, label, args))
+        		sender.sendMessage(new ChatResponse.ChatTranslation(TextFormat.RED + "redstonelamp.translation.command.usage", new String[] {command.getUsage()}));
+        } else {
+            sender.sendMessage("Unknown command! For help, use \"/help\"");
+        }
     }
-
-    public void registerCommand(String cmd, String description, CommandListener listener){
-        commands.put(cmd, description);
-        listeners.add(listener);
-    }
-
-    private void registerDefaultCommands(){
-        registerCommand("help", "View a list of all commands", new HelpCommand());
-        registerCommand("stop", "Stops the server", new StopCommand());
-    }
+	
+	public Command[] getCommands() {
+		return Command.getCommands();
+	}
+	
 }

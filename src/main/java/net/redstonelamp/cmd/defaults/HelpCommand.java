@@ -16,23 +16,58 @@
  */
 package net.redstonelamp.cmd.defaults;
 
-import net.redstonelamp.RedstoneLamp;
-import net.redstonelamp.cmd.CommandListener;
+import java.util.Arrays;
+
+import net.redstonelamp.cmd.Command;
+import net.redstonelamp.cmd.CommandExecutor;
 import net.redstonelamp.cmd.CommandSender;
+import net.redstonelamp.response.ChatResponse;
+import net.redstonelamp.utils.TextFormat;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-
-public class HelpCommand implements CommandListener{
-    @Override
-    public void onCommand(CommandSender sender, String cmd, String label, String[] params){
-        switch(cmd){
-            case "help":
-                HashMap<String, String> commands = RedstoneLamp.SERVER.getCommandManager().getCommands();
-                for(Entry<String, String> command : commands.entrySet()){
-                    sender.sendMessage("/" + command.getKey() + " - " + command.getValue());
-                }
-                break;
-        }
-    }
+public class HelpCommand implements CommandExecutor {
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		if(label.equalsIgnoreCase("help")) {
+			int page = 1;
+			if(args.length >= 1)
+				page = Integer.parseInt(args[0]);
+			page--;
+			Command[] commands = getCommands(page);
+			if(commands != null) {
+				//sender.sendMessage("Commands (" + (page+1) + "/" + getPages() + ")");
+				sender.sendMessage(new ChatResponse.ChatTranslation(TextFormat.GREEN+"redstonelamp.translation.command.help.header", new String[] {String.valueOf(page + 1), String.valueOf(getPages())}));
+				for (Command command : commands) {
+					if(command != null)
+						//sender.sendMessage("/" + command.getLabel() + " - " + command.getDescription());
+						sender.sendMessage(new ChatResponse.ChatTranslation("redstonelamp.translation.command.help.listEntry", new String[] {command.getLabel(), command.getDescription()}));
+				}
+			} else {
+				sender.sendMessage(new ChatResponse.ChatTranslation("redstonelamp.translation.command.help.invalidPage", new String[] {String.valueOf(page + 1)}));
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	private Command[] getCommands(int page) {
+		try {
+			return Arrays.copyOfRange(Command.getCommands(), page*10, (page*10)+10);
+		} catch(ArrayIndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+	
+	private int getPages() {
+		Command[] commands = Command.getCommands();
+		int j = 0;
+		int pages = 1;
+		for(int i = 0; i < commands.length; i++) {
+			if(j > 10) {
+				pages++;
+				j = 0;
+			}
+		}
+		return pages;
+	}
+	
 }

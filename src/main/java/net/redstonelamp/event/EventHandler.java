@@ -16,13 +16,17 @@
  */
 package net.redstonelamp.event;
 
-public @interface EventHandler{
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    EventPriority priority() default EventPriority.DEFAULT;
-
-    EventPlatform platform() default EventPlatform.BOTH;
-
-    ClientProtocol protocol();
-
-    boolean ignoreCancelled() default false;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface EventHandler {
+	
+	boolean ignoreCancelled() default true;
+	EventPlatform platform() default EventPlatform.BOTH;
+	EventPriority priority() default EventPriority.NORMAL;
+	
 }

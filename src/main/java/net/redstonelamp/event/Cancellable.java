@@ -16,16 +16,16 @@
  */
 package net.redstonelamp.event;
 
-public interface Cancellable{
+public interface Cancellable {
+	
     /**
      * Cancels the event
      */
-    void cancel();
-
+    void setCancelled(boolean cancelled);
+    
     /**
      * Returns true if the event is cancelled
-     *
-     * @return
      */
     boolean isCancelled();
+    
 }

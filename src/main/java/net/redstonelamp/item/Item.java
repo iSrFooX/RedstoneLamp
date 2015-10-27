@@ -16,18 +16,24 @@
  */
 package net.redstonelamp.item;
 
+import net.redstonelamp.block.*;
 import org.spout.nbt.CompoundTag;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents an Item.
  *
  * @author RedstoneLamp Team
  */
-public class Item{
-    private static final List<Item> implementedItems = new ArrayList<>();
+public class Item implements Items {
+    private static final Map<Integer, Class<? extends Item>> items = new HashMap<>();
+    private static final List<Item> creativeItems = new ArrayList<>();
     private final int id;
     private final short meta;
     private final int count;
@@ -40,8 +46,63 @@ public class Item{
     }
 
     public static void init(){
-        implementedItems.clear();
-        //TODO: register implemented items
+        creativeItems.clear();
+        items.clear();
+        initItems();
+        initCreativeItems();
+    }
+
+    private static void initItems() {
+        items.put(DIRT, Dirt.class);
+        items.put(GRASS, Grass.class);
+        items.put(STONE, Stone.class);
+        items.put(TALL_GRASS, TallGrass.class);
+        items.put(WOODEN_PLANKS, WoodPlanks.class);
+    }
+
+    private static void initCreativeItems() {
+        addCreativeItem(get(DIRT, (short) 0));
+        addCreativeItem(get(GRASS, (short) 0));
+        addCreativeItem(get(STONE, (short) 0));
+        addCreativeItem(get(COBBLESTONE, (short) 0));
+        addCreativeItem(get(WOODEN_PLANKS, (short) WoodPlanks.PlankType.OAK.getMetaId()));
+        addCreativeItem(get(WOODEN_PLANKS, (short) WoodPlanks.PlankType.SPRUCE.getMetaId()));
+        addCreativeItem(get(WOODEN_PLANKS, (short) WoodPlanks.PlankType.ACACIA.getMetaId()));
+        addCreativeItem(get(WOODEN_PLANKS, (short) WoodPlanks.PlankType.JUNGLE.getMetaId()));
+        addCreativeItem(get(WOODEN_PLANKS, (short) WoodPlanks.PlankType.BIRCH.getMetaId()));
+        addCreativeItem(get(WOODEN_PLANKS, (short) WoodPlanks.PlankType.DARK_OAK.getMetaId()));
+    }
+
+    public static synchronized void addCreativeItem(Item item) {
+        creativeItems.add(get(item.getId(), item.getMeta()));
+    }
+
+    public static Item get(int id) {
+        return get(id, (short) 0, 1);
+    }
+
+    public static Item get(int id, short meta) {
+        return get(id, meta, 1);
+    }
+
+    public static Item get(int id, short meta, int count) {
+        if(items.containsKey(id)) {
+            try {
+                Constructor c = items.get(id).getConstructor(int.class, short.class, int.class);
+                return (Item) c.newInstance(id, meta, count);
+            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else if(id < 256) {
+            return new Block(id, meta, count);
+        } else {
+            return new Item(id, meta, count);
+        }
+    }
+    
+    public static List<Item> getCreativeItems() {
+        return creativeItems;
     }
 
     public int getId(){

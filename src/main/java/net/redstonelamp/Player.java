@@ -16,35 +16,47 @@
  */
 package net.redstonelamp;
 
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
+
 import net.redstonelamp.block.Block;
-import net.redstonelamp.cmd.exception.InvalidCommandSenderException;
+import net.redstonelamp.cmd.CommandSender;
+import net.redstonelamp.cmd.exception.CommandException;
 import net.redstonelamp.entity.PlayerEntity;
 import net.redstonelamp.event.EventExecutor;
 import net.redstonelamp.event.block.BlockBreakEvent;
 import net.redstonelamp.event.block.BlockPlaceEvent;
 import net.redstonelamp.event.chunk.ChunkRequestEvent;
-import net.redstonelamp.event.player.*;
+import net.redstonelamp.event.player.PlayerAnimateEvent;
+import net.redstonelamp.event.player.PlayerChatEvent;
+import net.redstonelamp.event.player.PlayerEquipmentChangeEvent;
+import net.redstonelamp.event.player.PlayerLoginEvent;
+import net.redstonelamp.event.player.PlayerMoveEvent;
+import net.redstonelamp.event.player.PlayerSpawnEvent;
 import net.redstonelamp.inventory.NBTPlayerInventory;
 import net.redstonelamp.inventory.PlayerInventory;
 import net.redstonelamp.item.Item;
 import net.redstonelamp.level.ChunkPosition;
 import net.redstonelamp.level.position.BlockPosition;
 import net.redstonelamp.network.Protocol;
-import net.redstonelamp.player.PlayerDatabase;
+import net.redstonelamp.permission.OperatorPermissions;
+import net.redstonelamp.permission.Permission;
+import net.redstonelamp.permission.PermissionAttachment;
+import net.redstonelamp.plugin.Plugin;
 import net.redstonelamp.request.*;
 import net.redstonelamp.response.*;
-import net.redstonelamp.utils.ChatFormat;
-
-import java.net.SocketAddress;
-import java.util.UUID;
+import net.redstonelamp.utils.TextFormat;
 
 /**
  * <strong>Protocol-independent</strong> Player class. Represents a Player on the server
  *
  * @author RedstoneLamp Team
  */
-public class Player extends PlayerEntity{
+public class Player extends PlayerEntity implements CommandSender{
     private final Protocol protocol;
+    private final String userAgent;
     private final Server server;
     private final SocketAddress address;
     private final String identifier;
@@ -52,6 +64,7 @@ public class Player extends PlayerEntity{
     private long startLogin;
 
     private String username;
+    private String displayName;
     private UUID uuid;
     private int clientID;
     private byte[] skin;
@@ -59,8 +72,13 @@ public class Player extends PlayerEntity{
 
     private boolean connected = true;
     private boolean spawned = false;
+    private boolean sprinting = false;
+    private boolean sneaking = false;
+
     private int gamemode;
     private PlayerInventory inventory;
+    
+    private HashMap<Plugin, PermissionAttachment> permissionAttachments = new HashMap<>();
 
     /**
      * Construct a new Player instance belonging to the specified <code>Protocol</code> with the <code>identifier</code>
@@ -73,21 +91,24 @@ public class Player extends PlayerEntity{
     public Player(Protocol protocol, String identifier){
         this.protocol = protocol;
         this.identifier = identifier;
+        this.userAgent = "unknown";
         address = null;
 
         server = protocol.getManager().getServer();
     }
-
+    
     /**
      * Construct a new Player instance belonging to the specified <code>Protocol</code> connecting from
      * <code>address</code>
      *
      * @param protocol The protocol this player belongs to
+     * @param userAgent The user-agent, or platform this player is connecting from.
      * @param address  The SocketAddress this player is connecting from
      */
-    public Player(Protocol protocol, SocketAddress address){
+    public Player(Protocol protocol, String userAgent, SocketAddress address){
         this.protocol = protocol;
         this.address = address;
+        this.userAgent = userAgent;
 
         identifier = address.toString();
         server = protocol.getManager().getServer();
@@ -96,7 +117,7 @@ public class Player extends PlayerEntity{
     private void loadPlayerData(){
         PlayerDatabase.PlayerData data = server.getPlayerDatabase().getData(uuid);
         if(data == null){
-            server.getLogger().info("Couldn't find PlayerData for player " + getNametag() + " (" + uuid + ")");
+            server.getLogger().info("Couldn't find PlayerData for player " + getName() + " (" + uuid + ")");
             data = new PlayerDatabase.PlayerData();
             data.setUuid(uuid);
             data.setPosition(server.getLevelManager().getMainLevel().getSpawnPosition());
@@ -107,9 +128,8 @@ public class Player extends PlayerEntity{
             data.setInventory(inv);
             server.getPlayerDatabase().updateData(data);
         }
-        if(!data.getUuid().toString().equals(uuid.toString())){
+        if(!data.getUuid().toString().equals(uuid.toString()))
             server.getLogger().warning("[Loading data] UUID does not match: " + data.getUuid() + ", " + uuid);
-        }
         setPosition(data.getPosition());
         setHealth(data.getHealth());
         gamemode = data.getGamemode();
@@ -130,10 +150,18 @@ public class Player extends PlayerEntity{
     public void sendResponse(Response r){
         protocol.sendResponse(r, this);
     }
-
+    
+    @Override
     public void sendMessage(String s){
         protocol.sendImmediateResponse(new ChatResponse(s), this);
     }
+    
+    @Override
+    public void sendMessage(ChatResponse.ChatTranslation translation) {
+		ChatResponse r = new ChatResponse("");
+		r.translation = translation;
+		protocol.sendImmediateResponse(r, this);
+	}
 
     public void sendPopup(String s){
         protocol.sendImmediateResponse(new PopupResponse(s), this);
@@ -154,14 +182,15 @@ public class Player extends PlayerEntity{
             skin = lr.skin;
             slim = lr.slim;
 
-            setNametag(username);
+            setName(username);
+            displayName = username;
 
             loadPlayerData();
 
             LoginResponse response = new LoginResponse(true, gamemode, getHealth(), getPosition().getX(), getPosition().getY(), getPosition().getZ());
             PlayerLoginEvent ple = new PlayerLoginEvent(this);
             EventExecutor.throwEvent(ple);
-            if(!ple.isCancelled()){
+            if(!ple.isCancelled()) {
                 if(server.getPlayers().size() > server.getMaxPlayers()){
                     response.loginAllowed = false;
                     response.loginNotAllowedReason = "redstonelamp.loginFailed.serverFull";
@@ -170,16 +199,15 @@ public class Player extends PlayerEntity{
                     return;
                 }
                 server.getPlayers().stream()
-                        .filter(player -> player != this && player.getNametag().equals(getNametag()))
-                        .forEach(player -> player.close("redstonelamp.playerLeft", "logged in from another location", true));
+                        .filter(player -> player != this && player.getName().equals(getName()))
+                        .forEach(player -> player.close("redstonelamp.translation.player.left", "!redstonelamp.translation.player.loggedInFromOtherLocation", true));
                 sendResponse(response);
                 initEntity();
                 server.getLogger().info(username + "[" + address + "] logged in with entity ID " + getEntityID() + " in level \"" + getPosition().getLevel().getName() + "\""
                                 + " at position [x: " + getPosition().getX() + ", y: " + getPosition().getY() + ", z: " + getPosition().getZ() + "]"
                 );
-            }else{
+            } else
                 close("", "Disconnected from server", false);
-            }
         }else if(request instanceof ChunkRequest){
             ChunkRequestEvent cre = new ChunkRequestEvent(this);
             EventExecutor.throwEvent(cre);
@@ -201,27 +229,26 @@ public class Player extends PlayerEntity{
 
             server.getLogger().debug("Player " + username + " spawned (took " + (System.currentTimeMillis() - startLogin) + " ms)");
             spawned = true;
-            server.broadcastMessage(new ChatResponse.ChatTranslation(ChatFormat.YELLOW + "%multiplayer.player.joined", new String[]{username}));
+            server.broadcastMessage(new ChatResponse.ChatTranslation(TextFormat.YELLOW+"redstonelamp.translation.player.joined", new String[]{username}));
         }else if(request instanceof ChatRequest){
             ChatRequest cr = (ChatRequest) request;
-            if(cr.message.startsWith("/")){
-                try{
-                    server.getCommandManager().getCommandExecutor().execute(cr.message, this);
-                }catch(InvalidCommandSenderException e){
+            if(cr.message.startsWith("/")) {
+                try {
+                    server.getCommandManager().executeCommand(cr.message, this);
+                } catch (CommandException e) {
                     e.printStackTrace();
                 }
-            }else{
+            } else {
                 PlayerChatEvent pce = new PlayerChatEvent(this, cr.message);
                 EventExecutor.throwEvent(pce);
-                if(!pce.isCancelled()){
+                if(!pce.isCancelled())
                     server.broadcastMessage("<" + username + "> " + cr.message);
-                }
             }
         }else if(request instanceof PlayerMoveRequest){
             PlayerMoveEvent pme = new PlayerMoveEvent(this);
             PlayerMoveRequest pmr = (PlayerMoveRequest) request;
             EventExecutor.throwEvent(pme);
-            if(!pme.isCancelled()){
+            if(!pme.isCancelled()) {
                 if(gamemode == 1){
                     PlayerMoveResponse response = new PlayerMoveResponse(getEntityID(), pmr.position, pmr.onGround);
                     setPosition(pmr.position);
@@ -232,7 +259,7 @@ public class Player extends PlayerEntity{
             PlayerEquipmentChangeEvent pece = new PlayerEquipmentChangeEvent(this);
             PlayerEquipmentRequest er = (PlayerEquipmentRequest) request;
             EventExecutor.throwEvent(pece);
-            if(!pece.isCancelled()){
+            if(!pece.isCancelled()) {
                 PlayerEquipmentResponse response = new PlayerEquipmentResponse(er.item);
                 server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
             }
@@ -240,15 +267,15 @@ public class Player extends PlayerEntity{
             PlayerAnimateEvent pae = new PlayerAnimateEvent(this);
             AnimateRequest ar = (AnimateRequest) request;
             EventExecutor.throwEvent(pae);
-            if(!pae.isCancelled()){
-                AnimateResponse response = new AnimateResponse(ar.actionType);
+            if(!pae.isCancelled()) {
+                AnimateResponse response = new AnimateResponse(ar.actionType, getEntityID());
                 server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), response);
             }
         }else if(request instanceof BlockPlaceRequest){
             BlockPlaceEvent bpe = new BlockPlaceEvent();
             BlockPlaceRequest bpr = (BlockPlaceRequest) request;
             EventExecutor.throwEvent(bpe);
-            if(!bpe.isCancelled()){
+            if(!bpe.isCancelled()) {
                 //System.out.println("Request to place at: " + bpr.blockPosition);
                 BlockPlaceResponse response = new BlockPlaceResponse(bpr.block, BlockPosition.fromVector3(bpr.blockPosition, getPosition().getLevel()));
                 if(!getPosition().getLevel().isChunkLoaded(new ChunkPosition(bpr.blockPosition.getX() / 16, bpr.blockPosition.getZ() / 16))){
@@ -266,8 +293,8 @@ public class Player extends PlayerEntity{
             BlockBreakEvent bbe = new BlockBreakEvent();
             RemoveBlockRequest rbr = (RemoveBlockRequest) request;
             EventExecutor.throwEvent(bbe);
-            if(!bbe.isCancelled()){
-                System.out.println("Request to remove at: " + rbr.position);
+            if(!bbe.isCancelled()) {
+                //System.out.println("Request to remove at: " + rbr.position);
                 RemoveBlockResponse response = new RemoveBlockResponse(rbr.position);
                 if(!getPosition().getLevel().isChunkLoaded(new ChunkPosition(rbr.position.getX() / 16, rbr.position.getZ() / 16))){
                     server.getLogger().warning(username + " attempted to remove block in an unloaded chunk");
@@ -279,6 +306,34 @@ public class Player extends PlayerEntity{
                 //getPosition().getLevel().removeBlock(rbr.position);
                 getPosition().getLevel().setBlock(rbr.position, new Block(0, (short) 0, 1));
             }
+        } else if(request instanceof SetHeldItemRequest) {
+            SetHeldItemRequest shir = (SetHeldItemRequest) request;
+            inventory.setItemInHand(shir.item);
+            inventory.setSelectedSlot(shir.inventorySlot);
+            inventory.setItemInHandSlot(shir.hotbarSlot);
+            server.broadcastResponse(server.getPlayers().stream().filter(player -> player != this), new SetHeldItemResponse(getEntityID(), inventory.getItemInHand(), inventory.getSelectedSlot(), inventory.getItemInHandSlot()));
+        } else if(request instanceof SprintRequest) {
+            boolean starting = ((SprintRequest) request).starting;
+            synchronized (this) {
+                if (!isSprinting() && starting) {
+                    sprinting = true;
+                }
+                if (isSprinting() && !starting) {
+                    sprinting = false;
+                }
+            }
+            server.broadcastResponse(new SprintResponse(starting, this));
+        } else if(request instanceof SneakRequest) {
+            boolean starting = ((SneakRequest) request).starting;
+            synchronized (this) {
+                if (!isSneaking() && starting) {
+                    sneaking = true;
+                }
+                if (isSneaking() && !starting) {
+                    sneaking = false;
+                }
+            }
+            server.broadcastResponse(new SneakResponse(starting, this));
         }
     }
 
@@ -287,6 +342,15 @@ public class Player extends PlayerEntity{
         sendResponse(bpr);
     }
 
+    /**
+     * Notice to plugin developers: use Player.kick() instead.
+     * <br>
+     * Closes the connection to the player.
+     * @param leaveMessage Leave message to be broadcasted in chat.
+     * @param reason Reason displayed to the client. If sending a translation constant, first character must be "!"
+     * @param notifyClient If the client should be sent a disconnect notification with the reason or not.
+     */
+    //TODO: Better solution for translated reasons
     public void close(String leaveMessage, String reason, boolean notifyClient){
         DisconnectResponse dr = new DisconnectResponse(reason);
         dr.notifyClient = notifyClient;
@@ -298,7 +362,11 @@ public class Player extends PlayerEntity{
         destroyEntity();
 
         server.closeSession(this);
-        server.getLogger().info(username + "[" + identifier + "] logged out with reason: " + reason);
+        if(reason.startsWith("!")) { // Check if reason is a translation constant
+            server.getLogger().info(username + "[" + identifier + "] logged out with reason: " + server.getTranslationManager().translateServerSide(new ChatResponse.ChatTranslation(reason.replaceAll("!", ""), new String[0])));
+        } else {
+            server.getLogger().info(username + "[" + identifier + "] logged out with reason: " + reason);
+        }
         connected = false;
         protocol.close(this);
 
@@ -312,15 +380,32 @@ public class Player extends PlayerEntity{
         server.savePlayerData();
 
         if(!leaveMessage.isEmpty()){
-            switch(leaveMessage){
-                case "redstonelamp.playerLeft":
-                    server.broadcastMessage(new ChatResponse.ChatTranslation(ChatFormat.YELLOW + "%multiplayer.player.left", new String[]{username}));
+            switch (leaveMessage) {
+                case "redstonelamp.translation.player.left":
+            	    server.broadcastMessage(new ChatResponse.ChatTranslation(TextFormat.YELLOW+"redstonelamp.translation.player.left", new String[] {username}));
                     break;
                 default:
                     server.broadcastMessage(username + leaveMessage);
                     break;
             }
         }
+    }
+    
+    @Override
+    public boolean hasOp() {
+    	return true; // TODO: Get operators working
+    }
+    
+    public String getDisplayName() {
+    	return displayName;
+    }
+    
+    public void setDisplayName(String displayName) {
+    	this.displayName = displayName;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public Protocol getProtocol(){
@@ -360,7 +445,46 @@ public class Player extends PlayerEntity{
         return connected;
     }
 
-    public PlayerInventory getInventory(){
+    public PlayerInventory getInventory() {
         return inventory;
+    }
+    
+    public void addAttachment(Plugin plugin) {
+    	permissionAttachments.put(plugin, new PermissionAttachment(this, plugin));
+    }
+    
+    public PermissionAttachment getAttachment(Plugin plugin) {
+    	return permissionAttachments.get(plugin);
+    }
+    
+    public PermissionAttachment[] getAttachments() {
+    	return permissionAttachments.values().toArray(new PermissionAttachment[permissionAttachments.size()]);
+    }
+    
+    @Override
+    public boolean hasPermission(String permission) {
+    	ArrayList<String> permissions = new ArrayList<String>();
+    	for(PermissionAttachment attachment : getAttachments()) {
+    		for(Permission perm : attachment.getPermissions()) {
+    			if(!permissions.contains(perm.toString()))
+    				permissions.add(perm.toString());
+    		}
+    	}
+    	if(hasOp())
+    		for(Permission perm : OperatorPermissions.getPermissions(RedstoneLamp.SERVER.getConfig().getInt("op-permission-level")-1))
+    			permissions.add(perm.toString());
+    	return permissions.contains(permission);
+    }
+
+    public boolean isSprinting() {
+        return sprinting;
+    }
+
+    public boolean isSneaking() {
+        return sneaking;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
     }
 }

@@ -63,7 +63,7 @@ public class SubprotocolV27 extends Subprotocol implements ProtocolConst27{
             case LOGIN_PACKET:
                 getProtocol().getServer().getLogger().debug("Got Login packet!");
                 String username = up.bb().getString();
-                LoginRequest lr = new LoginRequest(username, UUID.nameUUIDFromBytes(username.getBytes()));
+                LoginRequest lr = new LoginRequest(username, "minecraft.pocket-011", UUID.nameUUIDFromBytes(username.getBytes()));
                 up.bb().skip(8); //Skip protocol1, protocol 2 (int, int)
                 lr.clientId = up.bb().getInt();
                 lr.slim = up.bb().getByte() > 0;
@@ -112,7 +112,7 @@ public class SubprotocolV27 extends Subprotocol implements ProtocolConst27{
                 short meta = up.bb().getShort();
                 byte slot = up.bb().getByte();
                 byte selectedSlot = up.bb().getByte();
-                requests.add(new PlayerEquipmentRequest(new Item(item, meta, 1)));
+                requests.add(new PlayerEquipmentRequest(Item.get(item, meta, 1)));
                 break;
             case ANIMATE_PACKET:
                 byte actionId = up.bb().getByte();
@@ -140,7 +140,8 @@ public class SubprotocolV27 extends Subprotocol implements ProtocolConst27{
 
                 if(face >= 0 && face <= 5){ //Use item on, Block Place
                     //TODO: Implement Item use, (pickaxe, sword, etc)
-                    Block block = new Block(item2, meta2, 1);
+                    //Block block = new Block(item2, meta2, 1);
+                    Block block = (Block) Block.get(item2, meta2, 1);
                     requests.add(new BlockPlaceRequest(block, new Vector3(ax, ay, az).getSide(face, 1)));
                 }
                 break;
@@ -340,7 +341,7 @@ public class SubprotocolV27 extends Subprotocol implements ProtocolConst27{
             bb = BinaryBuffer.newInstance(0, ByteOrder.BIG_ENDIAN);
             bb.putByte(ADD_PLAYER_PACKET);
             bb.putLong(p.getEntityID()); //Prevent client from knowing the real clientID
-            bb.putString(p.getNametag());
+            bb.putString(p.getName());
             bb.putLong(p.getEntityID());
             bb.putFloat(p.getPosition().getX());
             bb.putFloat(p.getPosition().getY());
