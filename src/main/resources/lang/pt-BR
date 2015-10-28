@@ -1,0 +1,18 @@
+;Language implementation for portugese, Brazil
+[Translations]
+redstonelamp.translation.player.joined=%param-0 Entrou no jogo.
+redstonelamp.translation.player.left=%param-0 Saiu do jogo.
+redstonelamp.translation.player.loggedInFromOtherLocation=Há alguem conectado com o mesmo nome
+
+redstonelamp.translation.command.usage=Usage: %param-0.
+
+redstonelamp.translation.command.help.header=-- Comandos de ajuda (Page %param-0/%param-1) --
+redstonelamp.translation.command.help.listEntry=/%param-0 - %param-1
+redstonelamp.translation.command.help.invalidPage=Página %param-0 nao existe!
+
+redstonelamp.translation.command.version.line1=Este server esta ligado %param-0 %param-1 %param-2.
+redstonelamp.translation.command.version.line2=Implementando MCPE: %param-0, MCPC: %param-1.
+
+redstonelamp.translation.command.list.noPlayers=Nenhum jogador online.
+redstonelamp.translation.command.list.onePlayer=Tem 1 jogador online: %param-0
+redstonelamp.translation.command.list.multiple=Tem %param-0 jogadores online:
