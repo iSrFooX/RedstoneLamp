@@ -43,9 +43,9 @@ import org.json.simple.JSONObject;
 
 import net.redstonelamp.Player;
 import net.redstonelamp.Server;
+import net.redstonelamp.network.itf.AdvancedNetworkInterface;
 import net.redstonelamp.network.LowLevelNetworkException;
 import net.redstonelamp.network.UniversalPacket;
-import net.redstonelamp.network.netInterface.AdvancedNetworkInterface;
 import net.redstonelamp.network.pc.codec.MinecraftPacketHeaderDecoder;
 import net.redstonelamp.network.pc.codec.MinecraftPacketHeaderEncoder;
 import net.redstonelamp.network.pc.serializer.ChatSerializer;
@@ -60,7 +60,7 @@ import net.redstonelamp.ui.Logger;
  *
  * @author RedstoneLamp Team
  */
-public class MinaInterface extends IoHandlerAdapter implements AdvancedNetworkInterface{
+public class MinaInterface extends IoHandlerAdapter implements AdvancedNetworkInterface {
     private final Server server;
     private final PCProtocol protocol;
     private final IoAcceptor acceptor;

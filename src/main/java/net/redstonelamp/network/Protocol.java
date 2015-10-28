@@ -18,14 +18,13 @@ package net.redstonelamp.network;
 
 import net.redstonelamp.Player;
 import net.redstonelamp.Server;
-import net.redstonelamp.network.netInterface.NetworkInterface;
+import net.redstonelamp.network.itf.NetworkInterface;
 import net.redstonelamp.request.LoginRequest;
 import net.redstonelamp.request.Request;
 import net.redstonelamp.response.Response;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Base class for a Protocol.

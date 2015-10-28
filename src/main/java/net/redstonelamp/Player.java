@@ -44,6 +44,7 @@ import net.redstonelamp.network.Protocol;
 import net.redstonelamp.permission.OperatorPermissions;
 import net.redstonelamp.permission.Permission;
 import net.redstonelamp.permission.PermissionAttachment;
+import net.redstonelamp.player.PlayerDatabase;
 import net.redstonelamp.plugin.Plugin;
 import net.redstonelamp.request.*;
 import net.redstonelamp.response.*;

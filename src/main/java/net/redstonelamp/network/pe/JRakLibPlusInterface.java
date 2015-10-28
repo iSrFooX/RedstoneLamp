@@ -27,7 +27,7 @@ import net.redstonelamp.Player;
 import net.redstonelamp.Server;
 import net.redstonelamp.network.LowLevelNetworkException;
 import net.redstonelamp.network.UniversalPacket;
-import net.redstonelamp.network.netInterface.AdvancedNetworkInterface;
+import net.redstonelamp.network.itf.AdvancedNetworkInterface;
 import net.redstonelamp.ui.ConsoleOut;
 import net.redstonelamp.ui.Logger;
 import org.slf4j.LoggerFactory;
