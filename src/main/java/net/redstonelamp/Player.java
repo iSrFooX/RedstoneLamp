@@ -89,6 +89,7 @@ public class Player extends PlayerEntity implements CommandSender{
      */
     @Deprecated
     public Player(Protocol protocol, String identifier){
+        super(protocol.getServer().getLevelManager().getMainLevel().getEntityManager(), null);
         this.protocol = protocol;
         this.identifier = identifier;
         this.userAgent = "unknown";
@@ -106,6 +107,7 @@ public class Player extends PlayerEntity implements CommandSender{
      * @param address  The SocketAddress this player is connecting from
      */
     public Player(Protocol protocol, String userAgent, SocketAddress address){
+        super(protocol.getServer().getLevelManager().getMainLevel().getEntityManager(), null);
         this.protocol = protocol;
         this.address = address;
         this.userAgent = userAgent;
@@ -134,12 +136,6 @@ public class Player extends PlayerEntity implements CommandSender{
         setHealth(data.getHealth());
         gamemode = data.getGamemode();
         inventory = data.getInventory();
-    }
-
-    @Override
-    protected void initEntity(){
-        setEntityID(server.getNextEntityID());
-        super.initEntity();
     }
 
     /**
@@ -202,6 +198,7 @@ public class Player extends PlayerEntity implements CommandSender{
                         .filter(player -> player != this && player.getName().equals(getName()))
                         .forEach(player -> player.close("redstonelamp.translation.player.left", "!redstonelamp.translation.player.loggedInFromOtherLocation", true));
                 sendResponse(response);
+                setEntityManager(getPosition().getLevel().getEntityManager());
                 initEntity();
                 server.getLogger().info(username + "[" + address + "] logged in with entity ID " + getEntityID() + " in level \"" + getPosition().getLevel().getName() + "\""
                                 + " at position [x: " + getPosition().getX() + ", y: " + getPosition().getY() + ", z: " + getPosition().getZ() + "]"

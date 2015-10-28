@@ -17,6 +17,7 @@
 package net.redstonelamp.entity;
 
 import net.redstonelamp.Player;
+import net.redstonelamp.level.position.Position;
 import net.redstonelamp.metadata.*;
 import net.redstonelamp.response.AddPlayerResponse;
 import net.redstonelamp.response.RemovePlayerResponse;
@@ -28,6 +29,10 @@ import net.redstonelamp.response.RemovePlayerResponse;
  * @author RedstoneLamp Team
  */
 public abstract class PlayerEntity extends Entity{
+
+    public PlayerEntity(EntityManager manager, Position position) {
+        super(manager, position);
+    }
 
     @Override
     protected void initEntity(){

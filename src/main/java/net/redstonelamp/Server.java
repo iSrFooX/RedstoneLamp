@@ -30,12 +30,14 @@ import net.redstonelamp.cmd.CommandManager;
 import net.redstonelamp.cmd.CommandSender;
 import net.redstonelamp.config.PropertiesConfig;
 import net.redstonelamp.config.YamlConfig;
+import net.redstonelamp.entity.Cow;
 import net.redstonelamp.event.Event;
 import net.redstonelamp.event.EventPlatform;
 import net.redstonelamp.item.Item;
 import net.redstonelamp.language.TranslationManager;
 import net.redstonelamp.level.Level;
 import net.redstonelamp.level.LevelManager;
+import net.redstonelamp.level.position.Position;
 import net.redstonelamp.network.NetworkManager;
 import net.redstonelamp.network.Protocol;
 import net.redstonelamp.network.pc.PCProtocol;
@@ -160,6 +162,8 @@ public class Server implements Runnable, CommandSender{
                 logger.fatal("FAILED TO SAVE PLAYER DATABASE! " + e.getClass().getName() + ": " + e.getMessage());
             }
         });
+
+        //Cow cow = new Cow(levelManager.getMainLevel().getEntityManager(), levelManager.getMainLevel().getSpawnPosition());
 
         Runtime.getRuntime().addShutdownHook(new ShutdownTaskExecuter(this));
     }

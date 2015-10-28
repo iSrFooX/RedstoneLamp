@@ -27,6 +27,7 @@ import net.redstonelamp.metadata.MetadataDictionary;
  */
 public abstract class Entity{
     private int entityID;
+    private int maxHealth;
     private int health;
     private Position position;
     private String name;
@@ -34,9 +35,16 @@ public abstract class Entity{
     //private EntityMetadata metadata;
     private boolean initialized = false;
     private EntityMotion motion;
+    private EntityManager manager;
+
+    public Entity(EntityManager manager, Position position) {
+        this.position = position;
+        this.manager = manager;
+    }
     
     protected void initEntity(){
         initialized = true;
+        setEntityID(manager.getNextEntityID());
         if(position != null && position.getLevel() != null){
             position.getLevel().getEntityManager().addEntity(this);
         }
@@ -47,6 +55,17 @@ public abstract class Entity{
         if(position != null && position.getLevel() != null){
             position.getLevel().getEntityManager().removeEntity(this);
         }
+    }
+
+    /**
+     * INTERNAL METHOD!
+     * <br>
+     * Called when an entity is to be ticked, or checked. This method is overrided in subclasses to perform
+     * actions such as movement for mob AI.
+     * @param tick The current tick.
+     */
+    public void doTick(long tick) {
+
     }
 
     /**
@@ -78,6 +97,10 @@ public abstract class Entity{
      */
     protected void setEntityID(int id){
         entityID = id;
+    }
+
+    protected void setEntityManager(EntityManager manager) {
+        this.manager = manager;
     }
 
     public MetadataDictionary getMetadata(){
@@ -121,5 +144,13 @@ public abstract class Entity{
      */
     public void setHealth(int health){
         this.health = health;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
     }
 }

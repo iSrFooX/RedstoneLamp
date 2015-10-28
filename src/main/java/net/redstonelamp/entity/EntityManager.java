@@ -17,6 +17,7 @@
 package net.redstonelamp.entity;
 
 import net.redstonelamp.level.Level;
+import net.redstonelamp.ticker.CallableTask;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -28,6 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class EntityManager{
     private final Level level;
+    private int nextEntityId = 0;
     private List<Entity> entities = new CopyOnWriteArrayList<>();
 
     /**
@@ -37,6 +39,11 @@ public class EntityManager{
      */
     public EntityManager(Level level){
         this.level = level;
+        level.getManager().getServer().getTicker().addRepeatingTask(new CallableTask("tickEntities", this), 5); //TODO: tick time
+    }
+
+    public void tickEntities(long tick) {
+        entities.forEach(entity -> entity.doTick(tick));
     }
 
     /**
@@ -77,5 +84,9 @@ public class EntityManager{
             }
         }
         return null;
+    }
+
+    protected int getNextEntityID() {
+        return nextEntityId++;
     }
 }
